@@ -60,6 +60,7 @@ if (!document.getElementById("hm-fonts")) {
 const statusMeta = (s) => s==="done"
   ? { bg:B.doneBg,  text:B.doneText,  border:"#B8CCA8", label:"Complete" }
   : { bg:B.todoBg,  text:B.charcoal,  border:B.creamBorder, label:"To Do" };
+// pending is treated as todo throughout
 
 function formatDate(iso) {
   if (!iso) return "—";
@@ -455,7 +456,7 @@ function UserPortal({ team, tickets, onUpdate, assignees }) {
 
       {/* Stats */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, marginBottom:28 }}>
-        {[["Open Tasks",myOpen.length],["Completed",myDone.length],["Total Assigned",allMine.length]].map(([label,count])=>(
+        {[["To Do",myOpen.length],["Complete",myDone.length],["Total Assigned",allMine.length]].map(([label,count])=>(
           <div key={label} style={{ background:B.white, border:`1px solid ${B.creamBorder}`, padding:"20px 16px", textAlign:"center" }}>
             <div style={{ fontSize:30, fontWeight:500, color:B.charcoal, fontFamily:fontSerif }}>{count}</div>
             <div style={{ fontSize:10, color:B.charcoalLight, marginTop:4, fontFamily:fontSans, letterSpacing:"0.1em", textTransform:"uppercase" }}>{label}</div>
@@ -588,7 +589,7 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
   const [showEmail, setShowEmail]   = useState(false);
 
   const filtered = tickets.filter(t => {
-    const matchTab    = tab==="all"||t.status===tab;
+    const matchTab    = tab==="all"||(tab==="todo"?(t.status==="todo"||t.status==="pending"):t.status===tab);
     const matchSearch = !search
       ||t.message.toLowerCase().includes(search.toLowerCase())
       ||(t.area||"").toLowerCase().includes(search.toLowerCase())
@@ -598,7 +599,7 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
     return matchTab&&matchSearch&&matchAssign;
   });
 
-  const counts = { all:tickets.length, todo:tickets.filter(t=>t.status==="todo").length, done:tickets.filter(t=>t.status==="done").length };
+  const counts = { all:tickets.length, todo:tickets.filter(t=>t.status==="todo"||t.status==="pending").length, done:tickets.filter(t=>t.status==="done").length };
   const printLabel = tab==="todo"?"To Do":tab==="done"?"Complete":"All Issues";
 
   const NavBtn = ({v, label}) => (
