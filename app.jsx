@@ -140,6 +140,140 @@ function Ornament({ small }) {
   );
 }
 
+// ─── UI translations ─────────────────────────────────────────────────────────
+const UI = {
+  en: {
+    flag: "🇬🇧", name: "English",
+    estateTitle: "Estate Maintenance",
+    reportTitle: "Report an Issue",
+    reportSubtitle: "Please describe the issue below. The estate management team will be notified and respond promptly.",
+    yourName: "Your Name",
+    optional: "(optional)",
+    where: "Where?",
+    wherePlaceholder: "e.g. Manor Bedroom 4, Kitchen, Walled Garden…",
+    describeIssue: "Describe the Issue",
+    describePlaceholder: "Please describe the problem in as much detail as possible…",
+    photograph: "Photograph",
+    takePhoto: "Take Photo",
+    uploadPhoto: "Upload Photo",
+    tapToChange: "Tap to change",
+    remove: "Remove",
+    language: "Language",
+    translateNote: "Your report will be automatically translated to English for the manager.",
+    submit: "Submit Report",
+    translating: "Translating…",
+    required: "Both location and issue description are required",
+    successTitle: "Issue Logged!",
+    successRef: "Your ticket reference",
+    successNote: "Please note this reference. The estate manager will review your report shortly.",
+    close: "Close",
+  },
+  pl: {
+    flag: "🇵🇱", name: "Polski",
+    estateTitle: "Konserwacja posiadłości",
+    reportTitle: "Zgłoś problem",
+    reportSubtitle: "Proszę opisać problem poniżej. Zespół zarządzający posiadłością zostanie powiadomiony i niezwłocznie zareaguje.",
+    yourName: "Twoje imię",
+    optional: "(opcjonalnie)",
+    where: "Gdzie?",
+    wherePlaceholder: "np. Sypialnia 4, Kuchnia, Ogród murowany…",
+    describeIssue: "Opisz problem",
+    describePlaceholder: "Proszę opisać problem jak najbardziej szczegółowo…",
+    photograph: "Zdjęcie",
+    takePhoto: "Zrób zdjęcie",
+    uploadPhoto: "Prześlij zdjęcie",
+    tapToChange: "Dotknij, aby zmienić",
+    remove: "Usuń",
+    language: "Język",
+    translateNote: "Twój raport zostanie automatycznie przetłumaczony na język angielski dla menedżera.",
+    submit: "Wyślij zgłoszenie",
+    translating: "Tłumaczenie…",
+    required: "Lokalizacja i opis problemu są wymagane",
+    successTitle: "Problem zgłoszony!",
+    successRef: "Numer Twojego zgłoszenia",
+    successNote: "Proszę zanotować ten numer. Menedżer posiadłości wkrótce przejrzy Twoje zgłoszenie.",
+    close: "Zamknij",
+  },
+  uk: {
+    flag: "🇺🇦", name: "Українська",
+    estateTitle: "Технічне обслуговування маєтку",
+    reportTitle: "Повідомити про проблему",
+    reportSubtitle: "Будь ласка, опишіть проблему нижче. Команда управління маєтком отримає сповіщення та оперативно відреагує.",
+    yourName: "Ваше ім'я",
+    optional: "(необов'язково)",
+    where: "Де?",
+    wherePlaceholder: "напр. Спальня 4, Кухня, Огороджений сад…",
+    describeIssue: "Опишіть проблему",
+    describePlaceholder: "Будь ласка, опишіть проблему якомога детальніше…",
+    photograph: "Фотографія",
+    takePhoto: "Зробити фото",
+    uploadPhoto: "Завантажити фото",
+    tapToChange: "Торкніться, щоб змінити",
+    remove: "Видалити",
+    language: "Мова",
+    translateNote: "Ваш звіт буде автоматично перекладено на англійську для менеджера.",
+    submit: "Надіслати звіт",
+    translating: "Перекладається…",
+    required: "Необхідно вказати місце та опис проблеми",
+    successTitle: "Проблему зафіксовано!",
+    successRef: "Номер вашого квитка",
+    successNote: "Будь ласка, запишіть цей номер. Менеджер маєтку незабаром розгляне ваш звіт.",
+    close: "Закрити",
+  },
+  hi: {
+    flag: "🇮🇳", name: "हिन्दी",
+    estateTitle: "एस्टेट रखरखाव",
+    reportTitle: "समस्या रिपोर्ट करें",
+    reportSubtitle: "कृपया नीचे समस्या का वर्णन करें। एस्टेट प्रबंधन टीम को सूचित किया जाएगा और वे शीघ्र प्रतिक्रिया देंगे।",
+    yourName: "आपका नाम",
+    optional: "(वैकल्पिक)",
+    where: "कहाँ?",
+    wherePlaceholder: "जैसे: मैनर बेडरूम 4, रसोई, दीवारबंद बगीचा…",
+    describeIssue: "समस्या का वर्णन करें",
+    describePlaceholder: "कृपया समस्या का यथासंभव विस्तार से वर्णन करें…",
+    photograph: "फोटो",
+    takePhoto: "फोटो लें",
+    uploadPhoto: "फोटो अपलोड करें",
+    tapToChange: "बदलने के लिए टैप करें",
+    remove: "हटाएं",
+    language: "भाषा",
+    translateNote: "आपकी रिपोर्ट प्रबंधक के लिए स्वचालित रूप से अंग्रेजी में अनुवादित की जाएगी।",
+    submit: "रिपोर्ट सबमिट करें",
+    translating: "अनुवाद हो रहा है…",
+    required: "स्थान और समस्या विवरण दोनों आवश्यक हैं",
+    successTitle: "समस्या दर्ज की गई!",
+    successRef: "आपका टिकट संदर्भ",
+    successNote: "कृपया इस संदर्भ को नोट करें। एस्टेट प्रबंधक शीघ्र ही आपकी रिपोर्ट की समीक्षा करेंगे।",
+    close: "बंद करें",
+  },
+  zh: {
+    flag: "🇨🇳", name: "普通话",
+    estateTitle: "庄园维护",
+    reportTitle: "报告问题",
+    reportSubtitle: "请在下方描述问题。庄园管理团队将收到通知并及时响应。",
+    yourName: "您的姓名",
+    optional: "（可选）",
+    where: "在哪里？",
+    wherePlaceholder: "例如：庄园卧室4、厨房、围墙花园…",
+    describeIssue: "描述问题",
+    describePlaceholder: "请尽可能详细地描述问题…",
+    photograph: "照片",
+    takePhoto: "拍照",
+    uploadPhoto: "上传照片",
+    tapToChange: "点击更改",
+    remove: "删除",
+    language: "语言",
+    translateNote: "您的报告将自动翻译成英文供管理员查看。",
+    submit: "提交报告",
+    translating: "翻译中…",
+    required: "位置和问题描述均为必填项",
+    successTitle: "问题已记录！",
+    successRef: "您的工单编号",
+    successNote: "请记下此编号。庄园经理将尽快审阅您的报告。",
+    close: "关闭",
+  },
+};
+
 // ─── Logo wordmark ────────────────────────────────────────────────────────────
 function LogoWordmark({ stacked=false, navSize=22, onDark=false }) {
   const col = onDark ? "#F5F2ED" : "#2C2C2C";
@@ -233,20 +367,20 @@ function emailList(tickets, title, toEmail) {
 }
 
 // ─── Ticket Confirm Modal ─────────────────────────────────────────────────────
-function TicketConfirmModal({ ticketNo, onClose }) {
+function TicketConfirmModal({ ticketNo, onClose, t }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(44,44,44,0.6)", zIndex:999, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div style={{ background:B.cream, padding:"44px 36px", maxWidth:340, width:"100%", textAlign:"center", boxShadow:"0 12px 48px rgba(0,0,0,0.18)" }}>
-        <div style={{ fontFamily:fontSerif, fontSize:13, letterSpacing:"0.15em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:8 }}>Issue Logged</div>
+        <div style={{ fontFamily:fontSerif, fontSize:13, letterSpacing:"0.15em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:8 }}>{t.successTitle}</div>
         <Ornament small />
-        <div style={{ fontFamily:fontSerif, fontSize:15, color:B.charcoalMid, margin:"16px 0 12px" }}>Your ticket reference</div>
+        <div style={{ fontFamily:fontSerif, fontSize:15, color:B.charcoalMid, margin:"16px 0 12px" }}>{t.successRef}</div>
         <div style={{ background:B.creamDark, border:`1px solid ${B.creamBorder}`, padding:"16px 24px", margin:"0 0 20px" }}>
           <span style={{ fontFamily:"monospace", fontSize:20, fontWeight:700, color:B.charcoal, letterSpacing:"0.08em" }}>{ticketNo}</span>
         </div>
         <p style={{ color:B.charcoalLight, fontSize:13, fontFamily:fontSans, lineHeight:1.6, margin:"0 0 24px", letterSpacing:"0.02em" }}>
-          Please note this reference. The estate manager will review your report shortly.
+          {t.successNote}
         </p>
-        <PrimaryBtn onClick={onClose}>Close</PrimaryBtn>
+        <PrimaryBtn onClick={onClose}>{t.close}</PrimaryBtn>
       </div>
     </div>
   );
@@ -259,36 +393,65 @@ function StaffForm({ onSubmit }) {
   const [name, setName]   = useState("");
   const [photo, setPhoto] = useState(null);
   const [ticketNo, setTicketNo] = useState(null);
+  const [lang, setLang]   = useState("en");
+  const [translating, setTranslating] = useState(false);
   const cameraRef = useRef();
   const uploadRef = useRef();
+  const t = UI[lang] || UI.en;
 
   const handlePhoto = e => {
     const file=e.target.files[0]; if(!file) return;
     const r=new FileReader(); r.onload=ev=>setPhoto(ev.target.result); r.readAsDataURL(file);
   };
 
-  const handleSubmit = () => {
-    if (!msg.trim()) return;
+  const handleSubmit = async () => {
+    if (!msg.trim() || !area.trim()) return;
+    setTranslating(true);
+    let finalMsg  = msg.trim();
+    let finalArea = area.trim();
+    if (lang !== "en") {
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 500,
+            messages: [{ role: "user", content: `Translate the following maintenance report fields to English. Return ONLY a JSON object with keys "message" and "area", no other text.
+
+Message: ${finalMsg}
+Area/Location: ${finalArea}` }]
+          })
+        });
+        const data = await res.json();
+        const text = data.content?.[0]?.text || "";
+        const clean = text.replace(/```json|```/g,"").trim();
+        const parsed = JSON.parse(clean);
+        if (parsed.message) finalMsg  = `${parsed.message} [Original: ${msg.trim()}]`;
+        if (parsed.area)    finalArea = parsed.area;
+      } catch(e) { /* fall back to original if translation fails */ }
+    }
+    setTranslating(false);
     const no = generateTicketNumber();
-    onSubmit({ message:msg.trim(), area:area.trim(), submittedBy:name.trim()||"Staff", photo, status:"todo", ticketNo:no });
-    setMsg(""); setArea(""); setName(""); setPhoto(null);
+    onSubmit({ message:finalMsg, area:finalArea, submittedBy:name.trim()||"Staff", photo, status:"todo", ticketNo:no, lang });
+    setMsg(""); setArea(""); setName(""); setPhoto(null); setLang("en");
     setTicketNo(no);
   };
 
   return (
     <div style={{ maxWidth:560, margin:"0 auto", padding:"0 24px 60px" }}>
-      {ticketNo && <TicketConfirmModal ticketNo={ticketNo} onClose={()=>setTicketNo(null)} />}
+      {ticketNo && <TicketConfirmModal ticketNo={ticketNo} onClose={()=>setTicketNo(null)} t={t} />}
 
       {/* Hero heading */}
       <div style={{ textAlign:"center", padding:"48px 0 36px" }}>
         <LogoWordmark stacked navSize={28} />
-        <div style={{ fontFamily:fontSerif, fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:B.charcoalLight, marginTop:16, marginBottom:4 }}>Estate Maintenance</div>
+        <div style={{ fontFamily:fontSerif, fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:B.charcoalLight, marginTop:16, marginBottom:4 }}>{t.estateTitle}</div>
         <h1 style={{ fontFamily:fontSerif, fontSize:32, fontWeight:400, color:B.charcoal, margin:"0 0 4px", letterSpacing:"0.08em", textTransform:"uppercase", lineHeight:1.1 }}>
-          Report an Issue
+          {t.reportTitle}
         </h1>
         <Ornament />
         <p style={{ fontFamily:fontSans, fontSize:13, color:B.charcoalLight, letterSpacing:"0.04em", lineHeight:1.7, maxWidth:340, margin:"0 auto" }}>
-          Please describe the issue below. The estate management team will be notified and respond promptly.
+          {t.reportSubtitle}
         </p>
       </div>
 
@@ -296,17 +459,41 @@ function StaffForm({ onSubmit }) {
 
         {/* Name */}
         <div>
-          <label style={labelStyle}>Your Name <span style={{ color:B.charcoalLight, fontWeight:400 }}>(optional)</span></label>
+          <label style={labelStyle}>{t.yourName} <span style={{ color:B.charcoalLight, fontWeight:400 }}>{t.optional}</span></label>
           <input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Sarah" style={inputStyle} />
+        </div>
+
+        <div>
+          <label style={labelStyle}>{t.language}</label>
+          <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" }}>
+            {Object.entries(UI).map(([code, val]) => (
+              <button key={code} onClick={() => setLang(code)} title={val.name} style={{
+                fontSize:26, lineHeight:1, padding:"6px 8px",
+                border:`2px solid ${lang===code ? B.charcoal : B.creamBorder}`,
+                background: lang===code ? B.creamDark : "transparent",
+                borderRadius:4, cursor:"pointer", transition:"all 0.15s",
+                display:"flex", flexDirection:"column", alignItems:"center", gap:2,
+              }}>
+                <span>{val.flag}</span>
+                <span style={{ fontSize:8, fontFamily:fontSans, color:B.charcoalLight, letterSpacing:"0.04em", textTransform:"uppercase", lineHeight:1.4 }}>{val.name}</span>
+              </button>
+            ))}
+          </div>
+          <select value={lang} onChange={e=>setLang(e.target.value)} style={{...inputStyle, fontFamily:fontSans}}>
+            {Object.entries(UI).map(([code, val]) => (
+              <option key={code} value={code}>{val.flag} {val.name}</option>
+            ))}
+          </select>
+          {lang !== "en" && <div style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, marginTop:6, letterSpacing:"0.03em" }}>{t.translateNote}</div>}
         </div>
 
         {/* WHERE — free type */}
         <div>
-          <label style={labelStyle}>Where? <span style={{ color:B.charcoalLight, fontWeight:400 }}>*</span></label>
+          <label style={labelStyle}>{t.where} <span style={{ color:B.charcoalLight, fontWeight:400 }}>*</span></label>
           <input
             value={area}
             onChange={e=>setArea(e.target.value)}
-            placeholder="e.g. Manor Bedroom 4, Kitchen, Walled Garden…"
+            placeholder={t.wherePlaceholder}
             style={inputStyle}
           />
         </div>
@@ -321,24 +508,24 @@ function StaffForm({ onSubmit }) {
 
         {/* Photo */}
         <div>
-          <label style={labelStyle}>Photograph <span style={{ color:B.charcoalLight, fontWeight:400 }}>(optional)</span></label>
+          <label style={labelStyle}>{t.photograph} <span style={{ color:B.charcoalLight, fontWeight:400 }}>{t.optional}</span></label>
           {photo ? (
             <div style={{ position:"relative" }}>
               <img src={photo} alt="Preview" style={{ width:"100%", maxHeight:200, objectFit:"cover", display:"block" }} />
-              <button onClick={()=>setPhoto(null)} style={{ position:"absolute", top:8, right:8, background:B.charcoal, color:B.cream, border:"none", borderRadius:0, padding:"4px 10px", fontSize:11, fontFamily:fontSans, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>Remove</button>
+              <button onClick={()=>setPhoto(null)} style={{ position:"absolute", top:8, right:8, background:B.charcoal, color:B.cream, border:"none", borderRadius:0, padding:"4px 10px", fontSize:11, fontFamily:fontSans, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>{t.remove}</button>
             </div>
           ) : (
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
               {/* Take photo tile */}
               <div onClick={()=>cameraRef.current.click()} style={{ border:`1px dashed ${B.creamBorder}`, padding:"28px 16px", textAlign:"center", cursor:"pointer", background:"transparent", transition:"background 0.2s" }}>
                 <div style={{ fontSize:26, marginBottom:8, opacity:0.5 }}>📷</div>
-                <div style={{ fontSize:11, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>Take Photo</div>
+                <div style={{ fontSize:11, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>{t.takePhoto}</div>
                 <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handlePhoto} />
               </div>
               {/* Upload photo tile */}
               <div onClick={()=>uploadRef.current.click()} style={{ border:`1px dashed ${B.creamBorder}`, padding:"28px 16px", textAlign:"center", cursor:"pointer", background:"transparent", transition:"background 0.2s" }}>
                 <div style={{ fontSize:26, marginBottom:8, opacity:0.5 }}>⬆</div>
-                <div style={{ fontSize:11, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>Upload Photo</div>
+                <div style={{ fontSize:11, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>{t.uploadPhoto}</div>
                 <input ref={uploadRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhoto} />
               </div>
             </div>
@@ -346,9 +533,11 @@ function StaffForm({ onSubmit }) {
         </div>
 
         <Ornament small />
-        <PrimaryBtn onClick={handleSubmit} disabled={!msg.trim() || !area.trim()}>Submit Report</PrimaryBtn>
+        <PrimaryBtn onClick={handleSubmit} disabled={!msg.trim() || !area.trim() || translating}>
+          {translating ? t.translating : t.submit}
+        </PrimaryBtn>
         <p style={{ textAlign:"center", fontSize:11, color:B.charcoalLight, fontFamily:fontSans, letterSpacing:"0.05em", marginTop:-12 }}>
-          Both location and issue description are required
+          {t.required}
         </p>
       </div>
     </div>
@@ -694,6 +883,98 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
   );
 }
 
+// ─── Estate Log (public read-only) ──────────────────────────────────────────
+function EstateLog({ tickets }) {
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+
+  const filtered = tickets.filter(t => {
+    const matchFilter = filter==="all" || t.status===filter || (filter==="todo" && t.status==="pending");
+    const matchSearch = !search
+      || (t.area||"").toLowerCase().includes(search.toLowerCase())
+      || t.message.toLowerCase().includes(search.toLowerCase());
+    return matchFilter && matchSearch;
+  });
+
+  const counts = {
+    all:  tickets.length,
+    todo: tickets.filter(t=>t.status==="todo"||t.status==="pending").length,
+    done: tickets.filter(t=>t.status==="done").length,
+  };
+
+  const TabBtn = ({v, label}) => (
+    <button onClick={()=>setFilter(v)} style={{
+      padding:"7px 14px", border:`1px solid ${filter===v?B.charcoal:B.creamBorder}`,
+      background: filter===v ? B.charcoal : "transparent",
+      color: filter===v ? B.cream : B.charcoalMid,
+      fontFamily:fontSans, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase",
+      fontWeight:600, cursor:"pointer", transition:"all 0.15s"
+    }}>{label} <span style={{opacity:0.6}}>({counts[v]||counts.all})</span></button>
+  );
+
+  return (
+    <div style={{ maxWidth:720, margin:"0 auto", padding:"0 24px 60px" }}>
+      <div style={{ textAlign:"center", padding:"40px 0 28px" }}>
+        <div style={{ fontFamily:fontSerif, fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:10 }}>Hampton Manor</div>
+        <h2 style={{ fontFamily:fontSerif, fontSize:32, fontWeight:400, color:B.charcoal, margin:"0 0 4px", letterSpacing:"0.08em", textTransform:"uppercase" }}>Estate Log</h2>
+        <Ornament />
+        <p style={{ fontFamily:fontSans, fontSize:13, color:B.charcoalLight, letterSpacing:"0.03em", lineHeight:1.6, maxWidth:400, margin:"0 auto" }}>
+          Live view of all reported maintenance issues across the estate.
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, marginBottom:24 }}>
+        {[["All",counts.all],["To Do",counts.todo],["Complete",counts.done]].map(([label,count])=>(
+          <div key={label} style={{ background:B.white, border:`1px solid ${B.creamBorder}`, padding:"18px 12px", textAlign:"center" }}>
+            <div style={{ fontSize:28, fontWeight:500, color:B.charcoal, fontFamily:fontSerif }}>{count}</div>
+            <div style={{ fontSize:10, color:B.charcoalLight, marginTop:4, fontFamily:fontSans, letterSpacing:"0.1em", textTransform:"uppercase" }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap" }}>
+        <TabBtn v="all"  label="All" />
+        <TabBtn v="todo" label="To Do" />
+        <TabBtn v="done" label="Complete" />
+      </div>
+
+      {/* Search */}
+      <div style={{ marginBottom:20 }}>
+        <input value={search} onChange={e=>setSearch(e.target.value)}
+          placeholder="Search by area or issue…"
+          style={inputStyle} />
+      </div>
+
+      {filtered.length===0 ? (
+        <div style={{ textAlign:"center", padding:"48px 0" }}>
+          <Ornament />
+          <p style={{ fontFamily:fontSerif, fontSize:18, color:B.charcoalLight, fontStyle:"italic" }}>No issues found</p>
+        </div>
+      ) : (
+        filtered.map(t => (
+          <div key={t.id} style={{ background:B.white, border:`1px solid ${B.creamBorder}`, marginBottom:8, padding:"16px 18px" }}>
+            <div style={{ display:"flex", alignItems:"flex-start", gap:12 }}>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5, flexWrap:"wrap" }}>
+                  <Badge status={t.status==="pending"?"todo":t.status} />
+                  {t.ticketNo && <span style={{ fontFamily:"monospace", fontSize:10, color:B.charcoalLight, background:B.creamDark, padding:"2px 7px" }}>{t.ticketNo}</span>}
+                  {t.area && <span style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, letterSpacing:"0.06em", textTransform:"uppercase" }}>{t.area}</span>}
+                </div>
+                <div style={{ fontSize:15, fontFamily:fontSerif, color:B.charcoal, lineHeight:1.5, wordBreak:"break-word" }}>{t.message}</div>
+                <div style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, marginTop:5, letterSpacing:"0.04em" }}>
+                  🕐 {formatDate(t.createdAt)}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
 // ─── Manager PIN Gate ─────────────────────────────────────────────────────────
 function ManagerPinGate({ onSuccess }) {
   const [pin, setPin] = useState("");
@@ -723,6 +1004,7 @@ function Header({ view, setView }) {
   const isManager = view==="manager";
   const isUser    = view==="user";
   const isStaff   = view==="staff";
+  const isLog     = view==="log";
 
   return (
     <div style={{ background:B.cream, borderBottom:`1px solid ${B.creamBorder}`, position:"sticky", top:0, zIndex:100 }}>
@@ -733,11 +1015,11 @@ function Header({ view, setView }) {
         </div>
         {/* Desktop nav */}
         <div style={{ display:"flex", gap:0 }}>
-          {[["Report an Issue","staff"],["My Tasks","user"],["Manager",isManager?"manager":"manager-gate"]].map(([label,v])=>(
+          {[["Report","staff"],["Estate Log","log"],["My Tasks","user"],["Manager",isManager?"manager":"manager-gate"]].map(([label,v])=>(
             <button key={v} onClick={()=>setView(v==="manager-gate"?(isManager?"manager":"manager-gate"):v)} style={{
               background:"transparent", border:"none",
-              borderBottom:`2px solid ${(isStaff&&v==="staff")||(isUser&&v==="user")||(isManager&&v==="manager-gate")?B.charcoal:"transparent"}`,
-              color: (isStaff&&v==="staff")||(isUser&&v==="user")||(isManager&&v==="manager-gate") ? B.charcoal : B.charcoalLight,
+              borderBottom:`2px solid ${(isStaff&&v==="staff")||(isLog&&v==="log")||(isUser&&v==="user")||(isManager&&v==="manager-gate")?B.charcoal:"transparent"}`,
+              color: (isStaff&&v==="staff")||(isLog&&v==="log")||(isUser&&v==="user")||(isManager&&v==="manager-gate") ? B.charcoal : B.charcoalLight,
               fontFamily:fontSans, fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase",
               padding:"0 14px", height:60, cursor:"pointer", fontWeight:600, transition:"all 0.15s"
             }}>{label}</button>
@@ -796,6 +1078,7 @@ export default function App() {
       <Header view={view} setView={setView} />
       <div>
         {view==="staff"        && <StaffForm onSubmit={addTicket} />}
+        {view==="log"          && <EstateLog tickets={tickets} />}
         {view==="user"         && <UserPortal team={team} tickets={tickets} onUpdate={updateTicket} assignees={assignees} />}
         {view==="manager-gate" && <ManagerPinGate onSuccess={()=>setView("manager")} />}
         {view==="manager"      && <ManagerPortal tickets={tickets} onUpdate={updateTicket} areas={areas} team={team} setTeam={setTeam} onSaveSettings={saveSettings} />}
