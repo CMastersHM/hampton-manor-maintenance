@@ -58,10 +58,8 @@ if (!document.getElementById("hm-fonts")) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const statusMeta = (s) => s==="done"
-  ? { bg:B.doneBg,  text:B.doneText,  border:"#B8CCA8", label:"Done"    }
-  : s==="todo"
-  ? { bg:B.todoBg,  text:B.charcoal,  border:B.creamBorder, label:"To Do" }
-  : { bg:B.cream,   text:B.charcoalMid, border:B.creamBorder, label:"Pending" };
+  ? { bg:B.doneBg,  text:B.doneText,  border:"#B8CCA8", label:"Complete" }
+  : { bg:B.todoBg,  text:B.charcoal,  border:B.creamBorder, label:"To Do" };
 
 function formatDate(iso) {
   if (!iso) return "—";
@@ -202,7 +200,7 @@ function printList(tickets, title) {
       <td><strong>${t.area||"—"}</strong></td>
       <td>${t.message}</td>
       <td>${t.assignee||"—"}</td>
-      <td style="font-weight:700;text-transform:uppercase;font-size:11px">${t.status||"pending"}</td>
+      <td style="font-weight:700;text-transform:uppercase;font-size:11px">${t.status||"todo"}</td>
     </tr>`).join("");
   const w=window.open("","_blank");
   w.document.write(`<!DOCTYPE html><html><head><title>${title}</title>
@@ -227,7 +225,7 @@ function printList(tickets, title) {
 }
 
 function emailList(tickets, title, toEmail) {
-  const lines=tickets.map(t=>`[${t.ticketNo||"—"}] ${formatDate(t.createdAt)}\nLocation: ${t.area||"—"}\nIssue: ${t.message}\nAssigned: ${t.assignee||"—"}\nStatus: ${(t.status||"pending").toUpperCase()}\n`).join("\n---\n\n");
+  const lines=tickets.map(t=>`[${t.ticketNo||"—"}] ${formatDate(t.createdAt)}\nLocation: ${t.area||"—"}\nIssue: ${t.message}\nAssigned: ${t.assignee||"—"}\nStatus: ${(t.status||"todo").toUpperCase()}\n`).join("\n---\n\n");
   const subject=encodeURIComponent(`Hampton Manor Maintenance — ${title}`);
   const body=encodeURIComponent(`Hampton Manor Maintenance Log\n${title}\nExported: ${new Date().toLocaleString("en-GB")}\n\n${lines}`);
   window.location.href=`mailto:${toEmail||""}?subject=${subject}&body=${body}`;
@@ -260,7 +258,8 @@ function StaffForm({ onSubmit }) {
   const [name, setName]   = useState("");
   const [photo, setPhoto] = useState(null);
   const [ticketNo, setTicketNo] = useState(null);
-  const fileRef = useRef();
+  const cameraRef = useRef();
+  const uploadRef = useRef();
 
   const handlePhoto = e => {
     const file=e.target.files[0]; if(!file) return;
@@ -270,7 +269,7 @@ function StaffForm({ onSubmit }) {
   const handleSubmit = () => {
     if (!msg.trim()) return;
     const no = generateTicketNumber();
-    onSubmit({ message:msg.trim(), area:area.trim(), submittedBy:name.trim()||"Staff", photo, status:"pending", ticketNo:no });
+    onSubmit({ message:msg.trim(), area:area.trim(), submittedBy:name.trim()||"Staff", photo, status:"todo", ticketNo:no });
     setMsg(""); setArea(""); setName(""); setPhoto(null);
     setTicketNo(no);
   };
@@ -322,27 +321,27 @@ function StaffForm({ onSubmit }) {
         {/* Photo */}
         <div>
           <label style={labelStyle}>Photograph <span style={{ color:B.charcoalLight, fontWeight:400 }}>(optional)</span></label>
-          <div
-            onClick={()=>fileRef.current.click()}
-            style={{
-              border:`1px dashed ${B.creamBorder}`, padding:"28px 20px",
-              textAlign:"center", cursor:"pointer", background:photo?B.creamDark:"transparent",
-              transition:"background 0.2s",
-            }}
-          >
-            {photo ? (
-              <div>
-                <img src={photo} alt="Preview" style={{ maxHeight:180, maxWidth:"100%", marginBottom:10 }} />
-                <div style={{ fontSize:11, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>Tap to change</div>
+          {photo ? (
+            <div style={{ position:"relative" }}>
+              <img src={photo} alt="Preview" style={{ width:"100%", maxHeight:200, objectFit:"cover", display:"block" }} />
+              <button onClick={()=>setPhoto(null)} style={{ position:"absolute", top:8, right:8, background:B.charcoal, color:B.cream, border:"none", borderRadius:0, padding:"4px 10px", fontSize:11, fontFamily:fontSans, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>Remove</button>
+            </div>
+          ) : (
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+              {/* Take photo tile */}
+              <div onClick={()=>cameraRef.current.click()} style={{ border:`1px dashed ${B.creamBorder}`, padding:"28px 16px", textAlign:"center", cursor:"pointer", background:"transparent", transition:"background 0.2s" }}>
+                <div style={{ fontSize:26, marginBottom:8, opacity:0.5 }}>📷</div>
+                <div style={{ fontSize:11, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>Take Photo</div>
+                <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handlePhoto} />
               </div>
-            ) : (
-              <div>
-                <div style={{ fontSize:26, marginBottom:8, opacity:0.4 }}>⬆</div>
-                <div style={{ fontSize:12, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>Add a photograph</div>
+              {/* Upload photo tile */}
+              <div onClick={()=>uploadRef.current.click()} style={{ border:`1px dashed ${B.creamBorder}`, padding:"28px 16px", textAlign:"center", cursor:"pointer", background:"transparent", transition:"background 0.2s" }}>
+                <div style={{ fontSize:26, marginBottom:8, opacity:0.5 }}>⬆</div>
+                <div style={{ fontSize:11, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>Upload Photo</div>
+                <input ref={uploadRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhoto} />
               </div>
-            )}
-            <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handlePhoto} />
-          </div>
+            </div>
+          )}
         </div>
 
         <Ornament small />
@@ -383,7 +382,7 @@ function TicketCard({ t, isManager, onUpdate, assignees, areas }) {
           {isManager && (
             <div style={{ display:"flex", flexDirection:"column", gap:14, marginTop:14 }}>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                {[["To Do","todo","#1a237e"],["Done","done","#2E5E1A"],["Pending","pending",B.charcoalMid]].map(([label,val,col])=>(
+                {[["To Do","todo","#1a237e"],["Complete","done","#2E5E1A"]].map(([label,val,col])=>(
                   <button key={val} onClick={()=>onUpdate(t.id,{status:val})} style={{
                     padding:"7px 16px", border:`1px solid ${t.status===val?col:B.creamBorder}`,
                     background:t.status===val?col:"transparent", color:t.status===val?B.cream:B.charcoalMid,
@@ -490,13 +489,25 @@ function UserPortal({ team, tickets, onUpdate, assignees }) {
 
       {myOpen.length>0 && (
         <>
-          <div style={{ fontFamily:fontSans, fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:12, paddingBottom:8, borderBottom:`1px solid ${B.creamBorder}` }}>Open Tasks</div>
-          {myOpen.map(t=><TicketCard key={t.id} t={t} isManager={false} onUpdate={onUpdate} assignees={assignees} areas={[]} />)}
+          <div style={{ fontFamily:fontSans, fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:12, paddingBottom:8, borderBottom:`1px solid ${B.creamBorder}` }}>To Do</div>
+          {myOpen.map(t=>(
+            <div key={t.id}>
+              <TicketCard t={t} isManager={false} onUpdate={onUpdate} assignees={assignees} areas={[]} />
+              <div style={{ marginTop:-8, marginBottom:12 }}>
+                <button onClick={()=>onUpdate(t.id,{status:"done"})} style={{
+                  width:"100%", padding:"10px", border:`1px solid #2E5E1A`,
+                  background:"transparent", color:"#2E5E1A", fontFamily:fontSans,
+                  fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase",
+                  fontWeight:600, cursor:"pointer"
+                }}>✓ Mark as Complete</button>
+              </div>
+            </div>
+          ))}
         </>
       )}
       {myDone.length>0 && (
         <>
-          <div style={{ fontFamily:fontSans, fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:B.charcoalLight, margin:"24px 0 12px", paddingBottom:8, borderBottom:`1px solid ${B.creamBorder}` }}>Completed</div>
+          <div style={{ fontFamily:fontSans, fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:B.charcoalLight, margin:"24px 0 12px", paddingBottom:8, borderBottom:`1px solid ${B.creamBorder}` }}>Complete</div>
           {myDone.map(t=><TicketCard key={t.id} t={t} isManager={false} onUpdate={onUpdate} assignees={assignees} areas={[]} />)}
         </>
       )}
@@ -587,8 +598,8 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
     return matchTab&&matchSearch&&matchAssign;
   });
 
-  const counts = { all:tickets.length, pending:tickets.filter(t=>t.status==="pending").length, todo:tickets.filter(t=>t.status==="todo").length, done:tickets.filter(t=>t.status==="done").length };
-  const printLabel = tab==="todo"?"To Do":tab==="done"?"Completed":"All Issues";
+  const counts = { all:tickets.length, todo:tickets.filter(t=>t.status==="todo").length, done:tickets.filter(t=>t.status==="done").length };
+  const printLabel = tab==="todo"?"To Do":tab==="done"?"Complete":"All Issues";
 
   const NavBtn = ({v, label}) => (
     <button onClick={()=>setSubView(v)} style={{
@@ -629,8 +640,8 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
       ) : (
         <>
           {/* Stats */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:2, marginBottom:24 }}>
-            {[["All",counts.all],["Pending",counts.pending],["To Do",counts.todo],["Done",counts.done]].map(([label,count])=>(
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, marginBottom:24 }}>
+            {[["All",counts.all],["To Do",counts.todo],["Complete",counts.done]].map(([label,count])=>(
               <div key={label} style={{ background:B.white, border:`1px solid ${B.creamBorder}`, padding:"18px 12px", textAlign:"center" }}>
                 <div style={{ fontSize:28, fontWeight:500, color:B.charcoal, fontFamily:fontSerif }}>{count}</div>
                 <div style={{ fontSize:10, color:B.charcoalLight, marginTop:4, fontFamily:fontSans, letterSpacing:"0.1em", textTransform:"uppercase" }}>{label}</div>
@@ -640,10 +651,9 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
 
           {/* Tabs + actions */}
           <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap", alignItems:"center" }}>
-            <TabBtn t="all"     label="All" />
-            <TabBtn t="pending" label="Pending" />
-            <TabBtn t="todo"    label="To Do" />
-            <TabBtn t="done"    label="Done" />
+            <TabBtn t="all"  label="All" />
+            <TabBtn t="todo" label="To Do" />
+            <TabBtn t="done" label="Complete" />
             <div style={{ marginLeft:"auto", display:"flex", gap:8 }}>
               <button onClick={()=>setShowEmail(v=>!v)} style={{ padding:"7px 12px", border:`1px solid ${B.creamBorder}`, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>📧</button>
               <button onClick={()=>printList(filtered,printLabel)} style={{ padding:"7px 12px", border:`1px solid ${B.creamBorder}`, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>🖨</button>
@@ -756,7 +766,7 @@ export default function App() {
   },[]);
 
   const addTicket = async data => {
-    const t={id:Date.now().toString(),createdAt:new Date().toISOString(),status:"pending",assignee:"Unassigned",...data};
+    const t={id:Date.now().toString(),createdAt:new Date().toISOString(),status:"todo",assignee:"Unassigned",...data};
     const updated=[t,...tickets]; setTickets(updated); await saveData("hm-tickets",updated);
   };
 
