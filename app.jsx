@@ -365,471 +365,73 @@ function exportTodoBackupPDF(tickets) {
   const dateStr = new Date().toLocaleDateString("en-GB", {day:"2-digit",month:"long",year:"numeric"});
   const timeStr = new Date().toLocaleTimeString("en-GB", {hour:"2-digit",minute:"2-digit"});
 
-  const ticketBlocks = todoTickets.map(t => {
+  const ticketBlocks = todoTickets.map(function(t) {
     const photoHtml = t.photo
-      ? `<div style="margin:10px 0"><img src="${t.photo}" style="max-width:100%;max-height:200px;object-fit:cover;border:1px solid #ddd" /></div>`
+      ? '<div style="margin:10px 0"><img src="' + t.photo + '" style="max-width:100%;max-height:200px;object-fit:cover;border:1px solid #ddd" /></div>'
       : '';
-    return `
-      <div style="border:1px solid #DDD8CF;padding:16px 18px;margin-bottom:14px;background:#fff;page-break-inside:avoid">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
-          <span style="background:#e8eaf6;color:#1a237e;border:1px solid #c5cae9;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">TO DO</span>
-          <span style="font-family:monospace;font-size:11px;color:#888;background:#f5f5f5;padding:2px 8px">${t.ticketNo||"—"}</span>
-          ${t.area ? `<span style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.06em">${t.area}</span>` : ''}
-          ${t.assignee && t.assignee!=="Unassigned" ? `<span style="font-size:11px;color:#1a237e;background:#e8eaf6;padding:2px 8px">→ ${t.assignee}</span>` : ''}
-        </div>
-        <div style="font-size:15px;color:#2C2C2C;line-height:1.5;margin-bottom:8px">${t.message}</div>
-        <div style="font-size:11px;color:#888">🕐 ${formatDate(t.createdAt)} · ${t.submittedBy||"Staff"}</div>
-        ${photoHtml}
-      </div>`;
+    const areaSpan = t.area
+      ? '<span style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.06em">' + t.area + '</span>'
+      : '';
+    const assigneeSpan = (t.assignee && t.assignee !== "Unassigned")
+      ? '<span style="font-size:11px;color:#1a237e;background:#e8eaf6;padding:2px 8px">&rarr; ' + t.assignee + '</span>'
+      : '';
+    return (
+      '<div style="border:1px solid #DDD8CF;padding:16px 18px;margin-bottom:14px;background:#fff;page-break-inside:avoid">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">' +
+          '<span style="background:#e8eaf6;color:#1a237e;border:1px solid #c5cae9;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">TO DO</span>' +
+          '<span style="font-family:monospace;font-size:11px;color:#888;background:#f5f5f5;padding:2px 8px">' + (t.ticketNo||"—") + '</span>' +
+          areaSpan +
+          assigneeSpan +
+        '</div>' +
+        '<div style="font-size:15px;color:#2C2C2C;line-height:1.5;margin-bottom:8px">' + (t.message||"") + '</div>' +
+        '<div style="font-size:11px;color:#888">' + formatDate(t.createdAt) + ' &middot; ' + (t.submittedBy||"Staff") + '</div>' +
+        photoHtml +
+      '</div>'
+    );
   }).join('');
 
-  const w = window.open("","_blank");
-  w.document.write(`<!DOCTYPE html><html><head><title>Hampton Manor — To Do Backup ${dateStr}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-      body{font-family:'Gill Sans','Optima',sans-serif;padding:36px;color:#2C2C2C;background:#F5F2ED;margin:0}
-      .header{border-bottom:2px solid #2C2C2C;padding-bottom:14px;margin-bottom:6px}
-      h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 4px}
-      .sub{color:#888;font-size:12px;letter-spacing:0.04em;margin-bottom:4px}
-      .summary{display:flex;gap:20px;margin:16px 0 24px;flex-wrap:wrap}
-      .stat{background:#fff;border:1px solid #DDD8CF;padding:12px 18px;text-align:center;min-width:80px}
-      .stat-num{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:500;color:#2C2C2C}
-      .stat-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px}
-      @media print{body{padding:16px;background:#F5F2ED}.no-print{display:none}button{display:none}}
-    </style>
-  </head><body>
-    <div class="header">
-      <h1>Hampton Man&#248;r</h1>
-      <div class="sub">Daily To Do Backup &nbsp;·&nbsp; ${dateStr} at ${timeStr}</div>
-    </div>
-    <div class="summary">
-      <div class="stat"><div class="stat-num">${todoTickets.length}</div><div class="stat-label">To Do</div></div>
-      <div class="stat"><div class="stat-num">${todoTickets.filter(t=>t.assignee&&t.assignee!=="Unassigned").length}</div><div class="stat-label">Assigned</div></div>
-      <div class="stat"><div class="stat-num">${todoTickets.filter(t=>t.photo).length}</div><div class="stat-label">With Photos</div></div>
-    </div>
-    ${todoTickets.length===0
-      ? '<p style="font-family:Georgia,serif;font-style:italic;color:#888;text-align:center;padding:40px 0">No open To Do tickets at time of export.</p>'
-      : ticketBlocks
-    }
-    <div style="border-top:1px solid #DDD8CF;margin-top:24px;padding-top:12px;font-size:10px;color:#aaa;text-align:center;letter-spacing:0.06em">
-      Hampton Manor Maintenance System &nbsp;·&nbsp; Exported ${dateStr} ${timeStr}
-    </div>
-    <div class="no-print" style="position:fixed;bottom:20px;right:20px">
-      <button onclick="window.print()" style="background:#2C2C2C;color:#F5F2ED;border:none;padding:12px 20px;font-size:13px;cursor:pointer;letter-spacing:0.08em">🖨 Print / Save PDF</button>
-    </div>
-  </body></html>`);
+  const summaryHtml =
+    '<div class="summary">' +
+      '<div class="stat"><div class="stat-num">' + todoTickets.length + '</div><div class="stat-label">To Do</div></div>' +
+      '<div class="stat"><div class="stat-num">' + todoTickets.filter(function(t){return t.assignee&&t.assignee!=="Unassigned";}).length + '</div><div class="stat-label">Assigned</div></div>' +
+      '<div class="stat"><div class="stat-num">' + todoTickets.filter(function(t){return !!t.photo;}).length + '</div><div class="stat-label">With Photos</div></div>' +
+    '</div>';
+
+  const emptyHtml = '<p style="font-family:Georgia,serif;font-style:italic;color:#888;text-align:center;padding:40px 0">No open To Do tickets at time of export.</p>';
+
+  const html = '<!DOCTYPE html><html><head><title>Hampton Manor To Do Backup ' + dateStr + '</title>' +
+    '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap" rel="stylesheet">' +
+    '<style>' +
+      'body{font-family:"Gill Sans","Optima",sans-serif;padding:36px;color:#2C2C2C;background:#F5F2ED;margin:0}' +
+      '.header{border-bottom:2px solid #2C2C2C;padding-bottom:14px;margin-bottom:6px}' +
+      'h1{font-family:"Cormorant Garamond",Georgia,serif;font-size:26px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 4px}' +
+      '.sub{color:#888;font-size:12px;letter-spacing:0.04em;margin-bottom:4px}' +
+      '.summary{display:flex;gap:20px;margin:16px 0 24px;flex-wrap:wrap}' +
+      '.stat{background:#fff;border:1px solid #DDD8CF;padding:12px 18px;text-align:center;min-width:80px}' +
+      '.stat-num{font-family:"Cormorant Garamond",Georgia,serif;font-size:28px;font-weight:500;color:#2C2C2C}' +
+      '.stat-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px}' +
+      '@media print{body{padding:16px}button{display:none}}' +
+    '</style></head><body>' +
+    '<div class="header">' +
+      '<h1>Hampton Man&#248;r</h1>' +
+      '<div class="sub">Daily To Do Backup &nbsp;&middot;&nbsp; ' + dateStr + ' at ' + timeStr + '</div>' +
+    '</div>' +
+    summaryHtml +
+    (todoTickets.length === 0 ? emptyHtml : ticketBlocks) +
+    '<div style="border-top:1px solid #DDD8CF;margin-top:24px;padding-top:12px;font-size:10px;color:#aaa;text-align:center;letter-spacing:0.06em">' +
+      'Hampton Manor Maintenance System &nbsp;&middot;&nbsp; Exported ' + dateStr + ' ' + timeStr +
+    '</div>' +
+    '<div style="position:fixed;bottom:20px;right:20px">' +
+      '<button onclick="window.print()" style="background:#2C2C2C;color:#F5F2ED;border:none;padding:12px 20px;font-size:13px;cursor:pointer;letter-spacing:0.08em">Print / Save as PDF</button>' +
+    '</div>' +
+    '</body></html>';
+
+  const w = window.open("", "_blank");
+  w.document.write(html);
   w.document.close();
-  // Auto-trigger print dialog so it can be saved as PDF
-  setTimeout(() => w.print(), 800);
+  setTimeout(function(){ w.print(); }, 800);
 }
 
-function emailList(tickets, title, toEmail) {
-  const lines=tickets.map(t=>`[${t.ticketNo||"—"}] ${formatDate(t.createdAt)}\nLocation: ${t.area||"—"}\nIssue: ${t.message}\nAssigned: ${t.assignee||"—"}\nStatus: ${(t.status||"todo").toUpperCase()}\n`).join("\n---\n\n");
-  const subject=encodeURIComponent(`Hampton Manor Maintenance — ${title}`);
-  const body=encodeURIComponent(`Hampton Manor Maintenance Log\n${title}\nExported: ${new Date().toLocaleString("en-GB")}\n\n${lines}`);
-  window.location.href=`mailto:${toEmail||""}?subject=${subject}&body=${body}`;
-}
-
-// ─── Ticket Confirm Modal ─────────────────────────────────────────────────────
-function TicketConfirmModal({ ticketNo, onClose, t }) {
-  return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(44,44,44,0.6)", zIndex:999, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:B.cream, padding:"44px 36px", maxWidth:340, width:"100%", textAlign:"center", boxShadow:"0 12px 48px rgba(0,0,0,0.18)" }}>
-        <div style={{ fontFamily:fontSerif, fontSize:13, letterSpacing:"0.15em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:8 }}>{t.successTitle}</div>
-        <Ornament small />
-        <div style={{ fontFamily:fontSerif, fontSize:15, color:B.charcoalMid, margin:"16px 0 12px" }}>{t.successRef}</div>
-        <div style={{ background:B.creamDark, border:`1px solid ${B.creamBorder}`, padding:"16px 24px", margin:"0 0 20px" }}>
-          <span style={{ fontFamily:"monospace", fontSize:20, fontWeight:700, color:B.charcoal, letterSpacing:"0.08em" }}>{ticketNo}</span>
-        </div>
-        <p style={{ color:B.charcoalLight, fontSize:13, fontFamily:fontSans, lineHeight:1.6, margin:"0 0 24px", letterSpacing:"0.02em" }}>
-          {t.successNote}
-        </p>
-        <PrimaryBtn onClick={onClose}>{t.close}</PrimaryBtn>
-      </div>
-    </div>
-  );
-}
-
-// ─── Staff Log Form ───────────────────────────────────────────────────────────
-function StaffForm({ onSubmit }) {
-  const [msg, setMsg]     = useState("");
-  const [area, setArea]   = useState("");
-  const [name, setName]   = useState("");
-  const [photo, setPhoto] = useState(null);
-  const [ticketNo, setTicketNo] = useState(null);
-  const [lang, setLang]   = useState("en");
-  const [translating, setTranslating] = useState(false);
-  const cameraRef = useRef();
-  const uploadRef = useRef();
-  const t = UI[lang] || UI.en;
-
-  const handlePhoto = e => {
-    const file=e.target.files[0]; if(!file) return;
-    const r=new FileReader(); r.onload=ev=>setPhoto(ev.target.result); r.readAsDataURL(file);
-  };
-
-  const handleSubmit = async () => {
-    if (!msg.trim() || !area.trim()) return;
-    setTranslating(true);
-    let finalMsg  = msg.trim();
-    let finalArea = area.trim();
-    if (lang !== "en") {
-      try {
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "claude-sonnet-4-20250514",
-            max_tokens: 500,
-            messages: [{ role: "user", content: `Translate the following maintenance report fields to English. Return ONLY a JSON object with keys "message" and "area", no other text.
-
-Message: ${finalMsg}
-Area/Location: ${finalArea}` }]
-          })
-        });
-        const data = await res.json();
-        const text = data.content?.[0]?.text || "";
-        const clean = text.replace(/```json|```/g,"").trim();
-        const parsed = JSON.parse(clean);
-        if (parsed.message) finalMsg  = `${parsed.message} [Original: ${msg.trim()}]`;
-        if (parsed.area)    finalArea = parsed.area;
-      } catch(e) { /* fall back to original if translation fails */ }
-    }
-    setTranslating(false);
-    const no = generateTicketNumber();
-    onSubmit({ message:finalMsg, area:finalArea, submittedBy:name.trim()||"Staff", photo, status:"todo", ticketNo:no, lang });
-    setMsg(""); setArea(""); setName(""); setPhoto(null); setLang("en");
-    setTicketNo(no);
-  };
-
-  return (
-    <div style={{ maxWidth:560, margin:"0 auto", padding:"0 24px 60px" }}>
-      {ticketNo && <TicketConfirmModal ticketNo={ticketNo} onClose={()=>setTicketNo(null)} t={t} />}
-
-      {/* Hero heading */}
-      <div style={{ textAlign:"center", padding:"48px 0 36px" }}>
-        <LogoWordmark stacked navSize={28} />
-        <div style={{ fontFamily:fontSerif, fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:B.charcoalLight, marginTop:16, marginBottom:4 }}>{t.estateTitle}</div>
-        <h1 style={{ fontFamily:fontSerif, fontSize:32, fontWeight:400, color:B.charcoal, margin:"0 0 4px", letterSpacing:"0.08em", textTransform:"uppercase", lineHeight:1.1 }}>
-          {t.reportTitle}
-        </h1>
-        <Ornament />
-        <p style={{ fontFamily:fontSans, fontSize:13, color:B.charcoalLight, letterSpacing:"0.04em", lineHeight:1.7, maxWidth:340, margin:"0 auto" }}>
-          {t.reportSubtitle}
-        </p>
-      </div>
-
-      <div style={{ display:"flex", flexDirection:"column", gap:28 }}>
-
-        {/* Name */}
-        <div>
-          <label style={labelStyle}>{t.yourName} <span style={{ color:B.charcoalLight, fontWeight:400 }}>{t.optional}</span></label>
-          <input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Sarah" style={inputStyle} />
-        </div>
-
-        <div>
-          <label style={labelStyle}>{t.language}</label>
-          <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" }}>
-            {Object.entries(UI).map(([code, val]) => (
-              <button key={code} onClick={() => setLang(code)} title={val.name} style={{
-                fontSize:26, lineHeight:1, padding:"6px 8px",
-                border:`2px solid ${lang===code ? B.charcoal : B.creamBorder}`,
-                background: lang===code ? B.creamDark : "transparent",
-                borderRadius:4, cursor:"pointer", transition:"all 0.15s",
-                display:"flex", flexDirection:"column", alignItems:"center", gap:2,
-              }}>
-                <span>{val.flag}</span>
-                <span style={{ fontSize:8, fontFamily:fontSans, color:B.charcoalLight, letterSpacing:"0.04em", textTransform:"uppercase", lineHeight:1.4 }}>{val.name}</span>
-              </button>
-            ))}
-          </div>
-          <select value={lang} onChange={e=>setLang(e.target.value)} style={{...inputStyle, fontFamily:fontSans}}>
-            {Object.entries(UI).map(([code, val]) => (
-              <option key={code} value={code}>{val.flag} {val.name}</option>
-            ))}
-          </select>
-          {lang !== "en" && <div style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, marginTop:6, letterSpacing:"0.03em" }}>{t.translateNote}</div>}
-        </div>
-
-        {/* WHERE — free type */}
-        <div>
-          <label style={labelStyle}>{t.where} <span style={{ color:B.charcoalLight, fontWeight:400 }}>*</span></label>
-          <input
-            value={area}
-            onChange={e=>setArea(e.target.value)}
-            placeholder={t.wherePlaceholder}
-            style={inputStyle}
-          />
-        </div>
-
-        {/* Issue description */}
-        <div>
-          <label style={labelStyle}>{t.describeIssue} <span style={{ color:B.charcoalLight, fontWeight:400 }}>*</span></label>
-          <textarea value={msg} onChange={e=>setMsg(e.target.value)}
-            placeholder={t.describePlaceholder}
-            rows={5} style={{ ...inputStyle, resize:"vertical", lineHeight:1.7, paddingTop:12 }} />
-        </div>
-
-        {/* Photo */}
-        <div>
-          <label style={labelStyle}>{t.photograph} <span style={{ color:B.charcoalLight, fontWeight:400 }}>{t.optional}</span></label>
-          {photo ? (
-            <div style={{ position:"relative" }}>
-              <img src={photo} alt="Preview" style={{ width:"100%", maxHeight:200, objectFit:"cover", display:"block" }} />
-              <button onClick={()=>setPhoto(null)} style={{ position:"absolute", top:8, right:8, background:B.charcoal, color:B.cream, border:"none", borderRadius:0, padding:"4px 10px", fontSize:11, fontFamily:fontSans, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>{t.remove}</button>
-            </div>
-          ) : (
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-              {/* Take photo tile */}
-              <div onClick={()=>cameraRef.current.click()} style={{ border:`1px dashed ${B.creamBorder}`, padding:"28px 16px", textAlign:"center", cursor:"pointer", background:"transparent", transition:"background 0.2s" }}>
-                <div style={{ fontSize:26, marginBottom:8, opacity:0.5 }}>📷</div>
-                <div style={{ fontSize:11, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>{t.takePhoto}</div>
-                <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handlePhoto} />
-              </div>
-              {/* Upload photo tile */}
-              <div onClick={()=>uploadRef.current.click()} style={{ border:`1px dashed ${B.creamBorder}`, padding:"28px 16px", textAlign:"center", cursor:"pointer", background:"transparent", transition:"background 0.2s" }}>
-                <div style={{ fontSize:26, marginBottom:8, opacity:0.5 }}>⬆</div>
-                <div style={{ fontSize:11, color:B.charcoalLight, letterSpacing:"0.08em", textTransform:"uppercase", fontFamily:fontSans }}>{t.uploadPhoto}</div>
-                <input ref={uploadRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhoto} />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <Ornament small />
-        <PrimaryBtn onClick={handleSubmit} disabled={!msg.trim() || !area.trim() || translating}>
-          {translating ? t.translating : t.submit}
-        </PrimaryBtn>
-        <p style={{ textAlign:"center", fontSize:11, color:B.charcoalLight, fontFamily:fontSans, letterSpacing:"0.05em", marginTop:-12 }}>
-          {t.required}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Ticket Card ──────────────────────────────────────────────────────────────
-function TicketCard({ t, isManager, onUpdate, assignees, areas }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ background:B.white, border:`1px solid ${B.creamBorder}`, marginBottom:10, overflow:"hidden" }}>
-      <div onClick={()=>setOpen(o=>!o)} style={{ padding:"16px 18px", cursor:"pointer", display:"flex", alignItems:"flex-start", gap:14 }}>
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6, flexWrap:"wrap" }}>
-            <Badge status={t.status} />
-            {t.ticketNo && <span style={{ fontFamily:"monospace", fontSize:10, color:B.charcoalLight, background:B.creamDark, padding:"2px 7px", letterSpacing:"0.04em" }}>{t.ticketNo}</span>}
-            {t.status==="todo" && t.assignee && t.assignee!=="Unassigned" &&
-              <span style={{ fontSize:10, color:B.charcoal, background:B.creamDark, padding:"2px 8px", fontFamily:fontSans, letterSpacing:"0.06em", textTransform:"uppercase" }}>→ {t.assignee}</span>}
-          </div>
-          {t.area && <div style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:5 }}>{t.area}</div>}
-          <div style={{ fontSize:15, fontFamily:fontSerif, color:B.charcoal, lineHeight:1.5, wordBreak:"break-word" }}>{t.message}</div>
-          <div style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, marginTop:6, letterSpacing:"0.04em" }}>
-            🕐 {formatDate(t.createdAt)} &nbsp;·&nbsp; {t.submittedBy||"Staff"}
-          </div>
-        </div>
-        <div style={{ fontSize:12, color:B.charcoalLight, flexShrink:0, marginTop:4, fontFamily:fontSans, letterSpacing:"0.06em" }}>{open?"▲":"▼"}</div>
-      </div>
-
-      {open && (
-        <div style={{ padding:"0 18px 18px", borderTop:`1px solid ${B.creamBorder}` }}>
-          {t.photo && <img src={t.photo} alt="Issue" style={{ width:"100%", maxHeight:260, objectFit:"cover", marginTop:14, marginBottom:14 }} />}
-          {isManager && (
-            <div style={{ display:"flex", flexDirection:"column", gap:14, marginTop:14 }}>
-              <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                {[["To Do","todo","#1a237e"],["Complete","done","#2E5E1A"]].map(([label,val,col])=>(
-                  <button key={val} onClick={()=>onUpdate(t.id,{status:val})} style={{
-                    padding:"7px 16px", border:`1px solid ${t.status===val?col:B.creamBorder}`,
-                    background:t.status===val?col:"transparent", color:t.status===val?B.cream:B.charcoalMid,
-                    fontFamily:fontSans, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase",
-                    fontWeight:600, cursor:"pointer", borderRadius:0, transition:"all 0.15s"
-                  }}>{label}</button>
-                ))}
-              </div>
-              <div>
-                <label style={labelStyle}>Edit Location</label>
-                <input value={t.area||""} onChange={e=>onUpdate(t.id,{area:e.target.value})} placeholder="e.g. Manor Bedroom 4…" style={inputStyle} />
-              </div>
-              <div>
-                <label style={labelStyle}>Assign To</label>
-                <select value={t.assignee||"Unassigned"} onChange={e=>onUpdate(t.id,{assignee:e.target.value})} style={{...inputStyle, fontFamily:fontSans}}>
-                  {assignees.map(a=><option key={a}>{a}</option>)}
-                </select>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── User Portal ──────────────────────────────────────────────────────────────
-function UserPortal({ team, tickets, onUpdate, assignees }) {
-  const [pin, setPin]   = useState("");
-  const [user, setUser] = useState(null);
-  const [err, setErr]   = useState(false);
-  const [emailAddr, setEmailAddr] = useState("");
-  const [showEmail, setShowEmail] = useState(false);
-
-  const login = () => {
-    const found=team.find(m=>m.pin===pin.trim());
-    if(found){setUser(found);setErr(false);}
-    else{setErr(true);setPin("");setTimeout(()=>setErr(false),2000);}
-  };
-
-  if (!user) return (
-    <div style={{ maxWidth:380, margin:"0 auto", padding:"60px 24px 40px", textAlign:"center" }}>
-      <LogoWordmark stacked navSize={26} />
-      <div style={{ fontFamily:fontSerif, fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:B.charcoalLight, marginTop:16, marginBottom:4 }}>Estate Maintenance</div>
-      <h2 style={{ fontFamily:fontSerif, fontSize:32, fontWeight:400, color:B.charcoal, margin:"0 0 4px", letterSpacing:"0.08em", textTransform:"uppercase" }}>My Tasks</h2>
-      <Ornament />
-      <p style={{ fontFamily:fontSans, fontSize:13, color:B.charcoalLight, marginBottom:32, letterSpacing:"0.03em", lineHeight:1.6 }}>Enter your personal PIN to view your assigned maintenance tasks</p>
-      <input type="password" inputMode="numeric" maxLength={6} value={pin}
-        onChange={e=>setPin(e.target.value)} onKeyDown={e=>e.key==="Enter"&&login()}
-        placeholder="· · · ·"
-        style={{...inputStyle, textAlign:"center", fontSize:28, letterSpacing:"0.3em", marginBottom:4, borderBottom:`1px solid ${B.charcoal}`}} />
-      {err && <div style={{ color:B.errorText, fontSize:12, fontFamily:fontSans, letterSpacing:"0.04em", marginBottom:12, marginTop:8 }}>PIN not recognised</div>}
-      {!err && <div style={{ height:28 }}/>}
-      <PrimaryBtn onClick={login}>Enter</PrimaryBtn>
-      <p style={{ color:B.charcoalLight, fontSize:11, fontFamily:fontSans, marginTop:20, letterSpacing:"0.05em" }}>Your PIN is provided by the manager</p>
-    </div>
-  );
-
-  const myOpen = tickets.filter(t=>t.assignee===user.name && t.status!=="done");
-  const myDone = tickets.filter(t=>t.assignee===user.name && t.status==="done");
-  const allMine= tickets.filter(t=>t.assignee===user.name);
-
-  return (
-    <div style={{ maxWidth:680, margin:"0 auto", padding:"0 24px 60px" }}>
-      <div style={{ textAlign:"center", padding:"40px 0 28px" }}>
-        <div style={{ fontFamily:fontSerif, fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:10 }}>Welcome back</div>
-        <h2 style={{ fontFamily:fontSerif, fontSize:32, fontWeight:400, color:B.charcoal, margin:"0 0 4px", letterSpacing:"0.08em", textTransform:"uppercase" }}>{user.name}</h2>
-        <Ornament />
-      </div>
-
-      {/* Stats */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, marginBottom:28 }}>
-        {[["To Do",myOpen.length],["Complete",myDone.length],["Total Assigned",allMine.length]].map(([label,count])=>(
-          <div key={label} style={{ background:B.white, border:`1px solid ${B.creamBorder}`, padding:"20px 16px", textAlign:"center" }}>
-            <div style={{ fontSize:30, fontWeight:500, color:B.charcoal, fontFamily:fontSerif }}>{count}</div>
-            <div style={{ fontSize:10, color:B.charcoalLight, marginTop:4, fontFamily:fontSans, letterSpacing:"0.1em", textTransform:"uppercase" }}>{label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Actions */}
-      <div style={{ display:"flex", gap:10, marginBottom:24, flexWrap:"wrap" }}>
-        <button onClick={()=>setShowEmail(v=>!v)} style={{ padding:"9px 16px", border:`1px solid ${B.creamBorder}`, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer" }}>📧 Email My List</button>
-        <button onClick={()=>printList(myOpen,`My Tasks — ${user.name}`)} style={{ padding:"9px 16px", border:`1px solid ${B.creamBorder}`, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer" }}>🖨 Print</button>
-        <button onClick={()=>setUser(null)} style={{ padding:"9px 16px", border:`1px solid ${B.creamBorder}`, background:"transparent", color:B.charcoalLight, fontFamily:fontSans, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer", marginLeft:"auto" }}>Sign Out</button>
-      </div>
-
-      {showEmail && (
-        <div style={{ background:B.creamDark, border:`1px solid ${B.creamBorder}`, padding:16, marginBottom:20 }}>
-          <label style={labelStyle}>Send open tasks to email</label>
-          <div style={{ display:"flex", gap:8 }}>
-            <input type="email" value={emailAddr} onChange={e=>setEmailAddr(e.target.value)} onKeyDown={e=>e.key==="Enter"&&(emailList(myOpen,`My Tasks — ${user.name}`,emailAddr),setShowEmail(false))} placeholder="you@example.com" style={{...inputStyle,flex:1}} />
-            <PrimaryBtn small onClick={()=>{emailList(myOpen,`My Tasks — ${user.name}`,emailAddr);setShowEmail(false);}}>Send</PrimaryBtn>
-          </div>
-        </div>
-      )}
-
-      {myOpen.length===0&&myDone.length===0 && (
-        <div style={{ textAlign:"center", padding:"48px 0" }}>
-          <Ornament />
-          <p style={{ fontFamily:fontSerif, fontSize:18, color:B.charcoalLight, fontStyle:"italic" }}>No tasks assigned to you at present</p>
-        </div>
-      )}
-
-      {myOpen.length>0 && (
-        <>
-          <div style={{ fontFamily:fontSans, fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:12, paddingBottom:8, borderBottom:`1px solid ${B.creamBorder}` }}>To Do</div>
-          {myOpen.map(t=>(
-            <div key={t.id}>
-              <TicketCard t={t} isManager={false} onUpdate={onUpdate} assignees={assignees} areas={[]} />
-              <div style={{ marginTop:-8, marginBottom:12 }}>
-                <button onClick={()=>onUpdate(t.id,{status:"done"})} style={{
-                  width:"100%", padding:"10px", border:`1px solid #2E5E1A`,
-                  background:"transparent", color:"#2E5E1A", fontFamily:fontSans,
-                  fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase",
-                  fontWeight:600, cursor:"pointer"
-                }}>✓ Mark as Complete</button>
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-      {myDone.length>0 && (
-        <>
-          <div style={{ fontFamily:fontSans, fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:B.charcoalLight, margin:"24px 0 12px", paddingBottom:8, borderBottom:`1px solid ${B.creamBorder}` }}>Complete</div>
-          {myDone.map(t=><TicketCard key={t.id} t={t} isManager={false} onUpdate={onUpdate} assignees={assignees} areas={[]} />)}
-        </>
-      )}
-    </div>
-  );
-}
-
-// ─── Settings Panel ───────────────────────────────────────────────────────────
-function SettingsPanel({ team, setTeam, onSave }) {
-  const [newName, setNewName] = useState("");
-  const [newPin,  setNewPin]  = useState("");
-  const [saved, setSaved]     = useState(false);
-  const [showPins, setShowPins] = useState(false);
-
-  const addMember = () => {
-    if(!newName.trim()||!newPin.trim()) return;
-    if(team.some(m=>m.pin===newPin.trim())){alert("PIN already in use.");return;}
-    setTeam([...team,{name:newName.trim(),pin:newPin.trim()}]);
-    setNewName(""); setNewPin("");
-  };
-  const removeMember = name => setTeam(team.filter(m=>m.name!==name));
-  const updatePin    = (name,pin) => setTeam(team.map(m=>m.name===name?{...m,pin}:m));
-  const handleSave   = async () => { await onSave(); setSaved(true); setTimeout(()=>setSaved(false),2500); };
-
-  return (
-    <div style={{ maxWidth:600, margin:"0 auto", padding:"0 24px 60px" }}>
-      <div style={{ textAlign:"center", padding:"40px 0 28px" }}>
-        <div style={{ fontFamily:fontSerif, fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:10 }}>Manager Portal</div>
-        <h2 style={{ fontFamily:fontSerif, fontSize:32, fontWeight:400, color:B.charcoal, margin:"0 0 4px", letterSpacing:"0.08em", textTransform:"uppercase" }}>Settings</h2>
-        <Ornament />
-      </div>
-
-      <div style={{ marginBottom:36 }}>
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-          <div style={{ fontFamily:fontSans, fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:B.charcoalLight }}>Team & PINs</div>
-          <button onClick={()=>setShowPins(v=>!v)} style={{ fontSize:11, color:B.charcoalLight, background:"none", border:`1px solid ${B.creamBorder}`, padding:"5px 12px", cursor:"pointer", fontFamily:fontSans, letterSpacing:"0.06em" }}>{showPins?"Hide PINs":"Show PINs"}</button>
-        </div>
-
-        <div style={{ display:"flex", flexDirection:"column", gap:2, marginBottom:16 }}>
-          {team.map(m=>(
-            <div key={m.name} style={{ display:"flex", alignItems:"center", gap:12, background:B.white, border:`1px solid ${B.creamBorder}`, padding:"12px 16px" }}>
-              <div style={{ flex:1, fontFamily:fontSerif, fontSize:16, color:B.charcoal }}>{m.name}</div>
-              {showPins
-                ? <input value={m.pin} onChange={e=>updatePin(m.name,e.target.value)} maxLength={8} style={{ width:80, padding:"6px 10px", border:`1px solid ${B.creamBorder}`, fontFamily:"monospace", fontSize:14, textAlign:"center", background:B.cream }} />
-                : <span style={{ fontFamily:"monospace", fontSize:13, color:B.charcoalLight, letterSpacing:"0.1em" }}>••••</span>
-              }
-              <span onClick={()=>removeMember(m.name)} style={{ cursor:"pointer", color:B.charcoalLight, fontSize:18, fontWeight:300, lineHeight:1 }}>×</span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ background:B.creamDark, border:`1px solid ${B.creamBorder}`, padding:16 }}>
-          <div style={{ fontFamily:fontSans, fontSize:10, letterSpacing:"0.12em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:12 }}>Add Team Member</div>
-          <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
-            <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Full name" style={{...inputStyle,flex:2,minWidth:100,background:B.white}} />
-            <input value={newPin}  onChange={e=>setNewPin(e.target.value)}  placeholder="PIN" maxLength={8} style={{...inputStyle,flex:1,minWidth:80,fontFamily:"monospace",background:B.white}} />
-            <PrimaryBtn small onClick={addMember}>Add</PrimaryBtn>
-          </div>
-        </div>
-      </div>
-
-      <Ornament small />
-      <div style={{ marginTop:20 }}>
-        <PrimaryBtn onClick={handleSave}>{saved?"✓ Saved to All Devices":"Save Changes"}</PrimaryBtn>
-      </div>
-    </div>
-  );
-}
 
 // ─── CSV export helper ───────────────────────────────────────────────────────
 function ticketsToCSV(tickets) {
@@ -1201,7 +803,7 @@ export default function App() {
     if (completed.length===0) return;
     // 1. Download CSV archive
     const csv = ticketsToCSV(completed);
-    const dateStr = new Date().toLocaleDateString("en-GB").replace(/\//g,"-");
+    const dateStr = new Date().toLocaleDateString("en-GB").split("/").join("-");
     downloadCSV(csv, `HamptonManor-Completed-${dateStr}.csv`);
     // 2. Remove completed from live data
     const remaining = tickets.filter(t=>t.status!=="done");
