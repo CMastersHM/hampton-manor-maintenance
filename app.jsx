@@ -359,6 +359,70 @@ function printList(tickets, title) {
   w.document.close(); w.print();
 }
 
+// ─── PDF backup export (To Do tickets with photos) ───────────────────────────
+function exportTodoBackupPDF(tickets) {
+  const todoTickets = tickets.filter(t => t.status==="todo" || t.status==="pending");
+  const dateStr = new Date().toLocaleDateString("en-GB", {day:"2-digit",month:"long",year:"numeric"});
+  const timeStr = new Date().toLocaleTimeString("en-GB", {hour:"2-digit",minute:"2-digit"});
+
+  const ticketBlocks = todoTickets.map(t => {
+    const photoHtml = t.photo
+      ? `<div style="margin:10px 0"><img src="${t.photo}" style="max-width:100%;max-height:200px;object-fit:cover;border:1px solid #ddd" /></div>`
+      : '';
+    return `
+      <div style="border:1px solid #DDD8CF;padding:16px 18px;margin-bottom:14px;background:#fff;page-break-inside:avoid">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="background:#e8eaf6;color:#1a237e;border:1px solid #c5cae9;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">TO DO</span>
+          <span style="font-family:monospace;font-size:11px;color:#888;background:#f5f5f5;padding:2px 8px">${t.ticketNo||"—"}</span>
+          ${t.area ? `<span style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.06em">${t.area}</span>` : ''}
+          ${t.assignee && t.assignee!=="Unassigned" ? `<span style="font-size:11px;color:#1a237e;background:#e8eaf6;padding:2px 8px">→ ${t.assignee}</span>` : ''}
+        </div>
+        <div style="font-size:15px;color:#2C2C2C;line-height:1.5;margin-bottom:8px">${t.message}</div>
+        <div style="font-size:11px;color:#888">🕐 ${formatDate(t.createdAt)} · ${t.submittedBy||"Staff"}</div>
+        ${photoHtml}
+      </div>`;
+  }).join('');
+
+  const w = window.open("","_blank");
+  w.document.write(`<!DOCTYPE html><html><head><title>Hampton Manor — To Do Backup ${dateStr}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      body{font-family:'Gill Sans','Optima',sans-serif;padding:36px;color:#2C2C2C;background:#F5F2ED;margin:0}
+      .header{border-bottom:2px solid #2C2C2C;padding-bottom:14px;margin-bottom:6px}
+      h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 4px}
+      .sub{color:#888;font-size:12px;letter-spacing:0.04em;margin-bottom:4px}
+      .summary{display:flex;gap:20px;margin:16px 0 24px;flex-wrap:wrap}
+      .stat{background:#fff;border:1px solid #DDD8CF;padding:12px 18px;text-align:center;min-width:80px}
+      .stat-num{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:500;color:#2C2C2C}
+      .stat-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px}
+      @media print{body{padding:16px;background:#F5F2ED}.no-print{display:none}button{display:none}}
+    </style>
+  </head><body>
+    <div class="header">
+      <h1>Hampton Man&#248;r</h1>
+      <div class="sub">Daily To Do Backup &nbsp;·&nbsp; ${dateStr} at ${timeStr}</div>
+    </div>
+    <div class="summary">
+      <div class="stat"><div class="stat-num">${todoTickets.length}</div><div class="stat-label">To Do</div></div>
+      <div class="stat"><div class="stat-num">${todoTickets.filter(t=>t.assignee&&t.assignee!=="Unassigned").length}</div><div class="stat-label">Assigned</div></div>
+      <div class="stat"><div class="stat-num">${todoTickets.filter(t=>t.photo).length}</div><div class="stat-label">With Photos</div></div>
+    </div>
+    ${todoTickets.length===0
+      ? '<p style="font-family:Georgia,serif;font-style:italic;color:#888;text-align:center;padding:40px 0">No open To Do tickets at time of export.</p>'
+      : ticketBlocks
+    }
+    <div style="border-top:1px solid #DDD8CF;margin-top:24px;padding-top:12px;font-size:10px;color:#aaa;text-align:center;letter-spacing:0.06em">
+      Hampton Manor Maintenance System &nbsp;·&nbsp; Exported ${dateStr} ${timeStr}
+    </div>
+    <div class="no-print" style="position:fixed;bottom:20px;right:20px">
+      <button onclick="window.print()" style="background:#2C2C2C;color:#F5F2ED;border:none;padding:12px 20px;font-size:13px;cursor:pointer;letter-spacing:0.08em">🖨 Print / Save PDF</button>
+    </div>
+  </body></html>`);
+  w.document.close();
+  // Auto-trigger print dialog so it can be saved as PDF
+  setTimeout(() => w.print(), 800);
+}
+
 function emailList(tickets, title, toEmail) {
   const lines=tickets.map(t=>`[${t.ticketNo||"—"}] ${formatDate(t.createdAt)}\nLocation: ${t.area||"—"}\nIssue: ${t.message}\nAssigned: ${t.assignee||"—"}\nStatus: ${(t.status||"todo").toUpperCase()}\n`).join("\n---\n\n");
   const subject=encodeURIComponent(`Hampton Manor Maintenance — ${title}`);
@@ -500,9 +564,9 @@ Area/Location: ${finalArea}` }]
 
         {/* Issue description */}
         <div>
-          <label style={labelStyle}>Describe the Issue <span style={{ color:B.charcoalLight, fontWeight:400 }}>*</span></label>
+          <label style={labelStyle}>{t.describeIssue} <span style={{ color:B.charcoalLight, fontWeight:400 }}>*</span></label>
           <textarea value={msg} onChange={e=>setMsg(e.target.value)}
-            placeholder="Please describe the problem in as much detail as possible…"
+            placeholder={t.describePlaceholder}
             rows={5} style={{ ...inputStyle, resize:"vertical", lineHeight:1.7, paddingTop:12 }} />
         </div>
 
@@ -767,8 +831,36 @@ function SettingsPanel({ team, setTeam, onSave }) {
   );
 }
 
+// ─── CSV export helper ───────────────────────────────────────────────────────
+function ticketsToCSV(tickets) {
+  const headers = ["Ticket #","Date","Time","Area","Issue","Submitted By","Assigned To","Status"];
+  const rows = tickets.map(t => {
+    const d = t.createdAt ? new Date(t.createdAt) : new Date();
+    return [
+      t.ticketNo||"",
+      d.toLocaleDateString("en-GB"),
+      d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}),
+      (t.area||"").replace(/,/g,""),
+      (t.message||"").replace(/,/g,";").replace(/
+/g," "),
+      (t.submittedBy||"").replace(/,/g,""),
+      (t.assignee||"").replace(/,/g,""),
+      (t.status||"").toUpperCase(),
+    ];
+  });
+  return [headers, ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+}
+
+function downloadCSV(csv, filename) {
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ─── Manager Portal ───────────────────────────────────────────────────────────
-function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings }) {
+function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings, onClearCompleted }) {
   const assignees = ["Unassigned",...team.map(m=>m.name)];
   const [tab, setTab]               = useState("all");
   const [search, setSearch]         = useState("");
@@ -776,6 +868,16 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
   const [subView, setSubView]       = useState("tickets");
   const [emailAddr, setEmailAddr]   = useState("");
   const [showEmail, setShowEmail]   = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const todayStr = new Date().toLocaleDateString("en-GB");
+  const lastExport = localStorage.getItem("hm-last-export");
+  const [showBackupPrompt, setShowBackupPrompt] = useState(lastExport !== todayStr);
+
+  const handleExportAndDismiss = () => {
+    exportTodoBackupPDF(tickets);
+    localStorage.setItem("hm-last-export", todayStr);
+    setShowBackupPrompt(false);
+  };
 
   const filtered = tickets.filter(t => {
     const matchTab    = tab==="all"||(tab==="todo"?(t.status==="todo"||t.status==="pending"):t.status===tab);
@@ -829,6 +931,22 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
         <SettingsPanel team={team} setTeam={setTeam} onSave={onSaveSettings} />
       ) : (
         <>
+          {/* Daily backup prompt */}
+          {showBackupPrompt && tickets.filter(t=>t.status==="todo"||t.status==="pending").length > 0 && (
+            <div style={{ background:"#f0f4e8", border:"1px solid #c5d5a0", borderRadius:0, padding:"14px 18px", marginBottom:20, display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
+              <div style={{ flex:1 }}>
+                <div style={{ fontFamily:fontSans, fontSize:12, fontWeight:700, color:"#2E5E1A", letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:3 }}>Daily Backup Reminder</div>
+                <div style={{ fontFamily:fontSans, fontSize:12, color:"#3a5a2a", lineHeight:1.5 }}>
+                  You have <strong>{tickets.filter(t=>t.status==="todo"||t.status==="pending").length} open To Do tickets</strong>. Export today's backup PDF to keep a local record.
+                </div>
+              </div>
+              <div style={{ display:"flex", gap:8 }}>
+                <button onClick={handleExportAndDismiss} style={{ padding:"8px 14px", background:"#2E5E1A", color:"#fff", border:"none", fontFamily:fontSans, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", fontWeight:700, cursor:"pointer" }}>📋 Export Now</button>
+                <button onClick={()=>{ localStorage.setItem("hm-last-export", todayStr); setShowBackupPrompt(false); }} style={{ padding:"8px 14px", background:"transparent", color:"#2E5E1A", border:"1px solid #2E5E1A", fontFamily:fontSans, fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer" }}>Dismiss</button>
+              </div>
+            </div>
+          )}
+
           {/* Stats */}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, marginBottom:24 }}>
             {[["All",counts.all],["To Do",counts.todo],["Complete",counts.done]].map(([label,count])=>(
@@ -847,6 +965,8 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
             <div style={{ marginLeft:"auto", display:"flex", gap:8 }}>
               <button onClick={()=>setShowEmail(v=>!v)} style={{ padding:"7px 12px", border:`1px solid ${B.creamBorder}`, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>📧</button>
               <button onClick={()=>printList(filtered,printLabel)} style={{ padding:"7px 12px", border:`1px solid ${B.creamBorder}`, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>🖨</button>
+              <button onClick={()=>exportTodoBackupPDF(tickets)} style={{ padding:"7px 12px", border:`1px solid #1b5e20`, background:"transparent", color:"#1b5e20", fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>📋 Daily Backup</button>
+              <button onClick={()=>setShowClearConfirm(true)} style={{ padding:"7px 12px", border:`1px solid #b71c1c`, background:"transparent", color:"#b71c1c", fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>🗑 Clear Complete</button>
             </div>
           </div>
 
@@ -868,6 +988,24 @@ function ManagerPortal({ tickets, onUpdate, areas, team, setTeam, onSaveSettings
               {assignees.map(a=><option key={a}>{a}</option>)}
             </select>
           </div>
+
+          {/* Clear Completed Confirmation Modal */}
+          {showClearConfirm && (
+            <div style={{ position:"fixed", inset:0, background:"rgba(44,44,44,0.6)", zIndex:999, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+              <div style={{ background:B.cream, padding:"36px 32px", maxWidth:380, width:"100%", textAlign:"center", boxShadow:"0 12px 48px rgba(0,0,0,0.18)" }}>
+                <div style={{ fontFamily:fontSerif, fontSize:20, fontWeight:500, color:B.charcoal, marginBottom:8, letterSpacing:"0.04em" }}>Clear Completed Tickets?</div>
+                <Ornament small />
+                <p style={{ fontFamily:fontSans, fontSize:13, color:B.charcoalMid, lineHeight:1.7, margin:"16px 0 24px" }}>
+                  This will permanently delete all <strong>{tickets.filter(t=>t.status==="done").length} completed tickets</strong> from the log.<br/><br/>
+                  A CSV export will be automatically downloaded to your device before deletion.
+                </p>
+                <div style={{ display:"flex", gap:10 }}>
+                  <button onClick={()=>setShowClearConfirm(false)} style={{ flex:1, padding:"12px", border:`1px solid ${B.creamBorder}`, background:"transparent", fontFamily:fontSans, fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer", color:B.charcoalMid }}>Cancel</button>
+                  <button onClick={()=>{ onClearCompleted(); setShowClearConfirm(false); }} style={{ flex:1, padding:"12px", border:"1px solid #b71c1c", background:"#b71c1c", color:"#fff", fontFamily:fontSans, fontSize:11, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer", fontWeight:700 }}>Confirm & Clear</button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {filtered.length===0 ? (
             <div style={{ textAlign:"center", padding:"48px 0" }}>
@@ -916,7 +1054,7 @@ function EstateLog({ tickets }) {
     <div style={{ maxWidth:720, margin:"0 auto", padding:"0 24px 60px" }}>
       <div style={{ textAlign:"center", padding:"40px 0 28px" }}>
         <div style={{ fontFamily:fontSerif, fontSize:11, letterSpacing:"0.2em", textTransform:"uppercase", color:B.charcoalLight, marginBottom:10 }}>Hampton Manor</div>
-        <h2 style={{ fontFamily:fontSerif, fontSize:32, fontWeight:400, color:B.charcoal, margin:"0 0 4px", letterSpacing:"0.08em", textTransform:"uppercase" }}>Estate Log</h2>
+        <h2 style={{ fontFamily:fontSerif, fontSize:32, fontWeight:400, color:B.charcoal, margin:"0 0 4px", letterSpacing:"0.08em", textTransform:"uppercase" }}>Submitted Tickets</h2>
         <Ornament />
         <p style={{ fontFamily:fontSans, fontSize:13, color:B.charcoalLight, letterSpacing:"0.03em", lineHeight:1.6, maxWidth:400, margin:"0 auto" }}>
           Live view of all reported maintenance issues across the estate.
@@ -1015,7 +1153,7 @@ function Header({ view, setView }) {
         </div>
         {/* Desktop nav */}
         <div style={{ display:"flex", gap:0 }}>
-          {[["Report","staff"],["Estate Log","log"],["My Tasks","user"],["Manager",isManager?"manager":"manager-gate"]].map(([label,v])=>(
+          {[["Report","staff"],["Submitted Tickets","log"],["My Tasks","user"],["Manager",isManager?"manager":"manager-gate"]].map(([label,v])=>(
             <button key={v} onClick={()=>setView(v==="manager-gate"?(isManager?"manager":"manager-gate"):v)} style={{
               background:"transparent", border:"none",
               borderBottom:`2px solid ${(isStaff&&v==="staff")||(isLog&&v==="log")||(isUser&&v==="user")||(isManager&&v==="manager-gate")?B.charcoal:"transparent"}`,
@@ -1058,6 +1196,19 @@ export default function App() {
     setTickets(updated); await saveData("hm-tickets",updated);
   };
 
+  const clearCompleted = async () => {
+    const completed = tickets.filter(t=>t.status==="done");
+    if (completed.length===0) return;
+    // 1. Download CSV archive
+    const csv = ticketsToCSV(completed);
+    const dateStr = new Date().toLocaleDateString("en-GB").replace(/\//g,"-");
+    downloadCSV(csv, `HamptonManor-Completed-${dateStr}.csv`);
+    // 2. Remove completed from live data
+    const remaining = tickets.filter(t=>t.status!=="done");
+    setTickets(remaining);
+    await saveData("hm-tickets", remaining);
+  };
+
   const saveSettings = async () => {
     await saveData("hm-areas",areas);
     await saveData("hm-team",team);
@@ -1081,7 +1232,7 @@ export default function App() {
         {view==="log"          && <EstateLog tickets={tickets} />}
         {view==="user"         && <UserPortal team={team} tickets={tickets} onUpdate={updateTicket} assignees={assignees} />}
         {view==="manager-gate" && <ManagerPinGate onSuccess={()=>setView("manager")} />}
-        {view==="manager"      && <ManagerPortal tickets={tickets} onUpdate={updateTicket} areas={areas} team={team} setTeam={setTeam} onSaveSettings={saveSettings} />}
+        {view==="manager"      && <ManagerPortal tickets={tickets} onUpdate={updateTicket} areas={areas} team={team} setTeam={setTeam} onSaveSettings={saveSettings} onClearCompleted={clearCompleted} />}
       </div>
       {/* Footer */}
       <div style={{ borderTop:`1px solid ${B.creamBorder}`, padding:"24px", textAlign:"center", marginTop:40 }}>
