@@ -419,23 +419,11 @@ function StaffForm({ onSubmit }) {
         </div>
 
         <div>
-          <label style={labelStyle}>{t.language}</label>
-          <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" }}>
-            {Object.entries(UI).map(function(entry) {
-              const code = entry[0]; const val = entry[1];
-              return (
-                <button key={code} onClick={function(){setLang(code);}} title={val.name} style={{
-                  fontSize:26, lineHeight:1, padding:"6px 8px",
-                  border:"2px solid " + (lang===code ? B.charcoal : B.creamBorder),
-                  background: lang===code ? B.creamDark : "transparent",
-                  borderRadius:4, cursor:"pointer", transition:"all 0.15s",
-                  display:"flex", flexDirection:"column", alignItems:"center", gap:2,
-                }}>
-                  <span>{val.flag}</span>
-                  <span style={{ fontSize:8, fontFamily:fontSans, color:B.charcoalLight, letterSpacing:"0.04em", textTransform:"uppercase", lineHeight:1.4 }}>{val.name}</span>
-                </button>
-              );
-            })}
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+            <label style={{ ...labelStyle, marginBottom:0 }}>{t.language}</label>
+            <span style={{ fontSize:22, letterSpacing:3 }}>
+              {Object.values(UI).map(function(val){ return val.flag; }).join(" ")}
+            </span>
           </div>
           <select value={lang} onChange={function(e){setLang(e.target.value);}} style={{ ...inputStyle, fontFamily:fontSans }}>
             {Object.entries(UI).map(function(entry) {
@@ -801,26 +789,32 @@ function ManagerPortal({ tickets, onUpdate, team, setTeam, onSaveSettings, onCle
           )}
 
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:2, marginBottom:24 }}>
-            {[["All",counts.all],["To Do",counts.todo],["Complete",counts.done]].map(function(item) {
+            {[["All","all",counts.all],["To Do","todo",counts.todo],["Complete","done",counts.done]].map(function(item) {
+              const label=item[0]; const key=item[1]; const count=item[2];
+              const active = tab===key;
               return (
-                <div key={item[0]} style={{ background:B.white, border:"1px solid " + B.creamBorder, padding:"18px 12px", textAlign:"center" }}>
-                  <div style={{ fontSize:28, fontWeight:500, color:B.charcoal, fontFamily:fontSerif }}>{item[1]}</div>
-                  <div style={{ fontSize:10, color:B.charcoalLight, marginTop:4, fontFamily:fontSans, letterSpacing:"0.1em", textTransform:"uppercase" }}>{item[0]}</div>
+                <div key={key} onClick={function(){setTab(key);}} style={{
+                  background: active ? B.charcoal : B.white,
+                  border:"1px solid " + (active ? B.charcoal : B.creamBorder),
+                  padding:"18px 12px", textAlign:"center", cursor:"pointer",
+                  transition:"all 0.15s",
+                }}>
+                  <div style={{ fontSize:28, fontWeight:500, color: active ? B.cream : B.charcoal, fontFamily:fontSerif }}>{count}</div>
+                  <div style={{ fontSize:10, color: active ? B.cream : B.charcoalLight, marginTop:4, fontFamily:fontSans, letterSpacing:"0.1em", textTransform:"uppercase" }}>{label}</div>
                 </div>
               );
             })}
           </div>
 
-          <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap", alignItems:"center" }}>
-            <TabBtn t="all"  label="All" />
-            <TabBtn t="todo" label="To Do" />
-            <TabBtn t="done" label="Complete" />
-            <div style={{ marginLeft:"auto", display:"flex", gap:8 }}>
-              <button onClick={function(){setShowEmail(function(v){return !v;});}} style={{ padding:"7px 12px", border:"1px solid " + B.creamBorder, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>📧</button>
-              <button onClick={function(){printList(filtered,printLabel);}} style={{ padding:"7px 12px", border:"1px solid " + B.creamBorder, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>🖨</button>
-              <button onClick={function(){exportTodoBackupPDF(tickets);}} style={{ padding:"7px 12px", border:"1px solid #1b5e20", background:"transparent", color:"#1b5e20", fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>📋 Daily Backup</button>
-              <button onClick={function(){setShowClearConfirm(true);}} style={{ padding:"7px 12px", border:"1px solid #b71c1c", background:"transparent", color:"#b71c1c", fontFamily:fontSans, fontSize:10, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>🗑 Clear Complete</button>
-            </div>
+          {/* Action buttons row — email + print */}
+          <div style={{ display:"flex", gap:8, marginBottom:10, flexWrap:"wrap" }}>
+            <button onClick={function(){setShowEmail(function(v){return !v;});}} style={{ flex:1, padding:"12px 10px", border:"1px solid " + B.creamBorder, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:11, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", minWidth:80 }}>📧 Email</button>
+            <button onClick={function(){printList(filtered,printLabel);}} style={{ flex:1, padding:"12px 10px", border:"1px solid " + B.creamBorder, background:"transparent", color:B.charcoalMid, fontFamily:fontSans, fontSize:11, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", minWidth:80 }}>🖨 Print</button>
+            <button onClick={function(){exportTodoBackupPDF(tickets);}} style={{ flex:1, padding:"12px 10px", border:"1px solid #1b5e20", background:"transparent", color:"#1b5e20", fontFamily:fontSans, fontSize:11, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", minWidth:100 }}>📋 Backup</button>
+          </div>
+          {/* Danger zone — clear complete — separated with margin */}
+          <div style={{ marginBottom:16 }}>
+            <button onClick={function(){setShowClearConfirm(true);}} style={{ width:"100%", padding:"12px 10px", border:"1px solid #b71c1c", background:"transparent", color:"#b71c1c", fontFamily:fontSans, fontSize:11, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>🗑 Clear Completed Tickets</button>
           </div>
 
           {showEmail && (
