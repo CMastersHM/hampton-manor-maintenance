@@ -161,7 +161,7 @@ function generateTicketNumber() {
 
 // ─── Supabase config ──────────────────────────────────────────────────────────
 const SUPABASE_URL = "https://nolzqgcqfwexjmpdrpuh.supabase.co";
-const SUPABASE_KEY = "sb_publishable_0s2_DNo7OFtB8USXnurY_g_ZU9krNoy";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vbHpxZ2NxZndleGptcGRycHVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjY3NzEsImV4cCI6MjA5NDM0Mjc3MX0.eWkPupfY3NrTtITbqeCrBVRdIptfE5ZvO3Md1YVqgMw";
 const SB_HEADERS = {
   "apikey": SUPABASE_KEY,
   "Authorization": "Bearer " + SUPABASE_KEY,
@@ -169,10 +169,82 @@ const SB_HEADERS = {
   "Prefer": "return=representation",
 };
 
-async function loadData(key) {
+// ─── Ticket data functions (each ticket = its own row) ────────────────────────
+async function loadTickets() {
   try {
     const res = await fetch(
-      SUPABASE_URL + "/rest/v1/tickets?key=eq." + encodeURIComponent(key) + "&select=value&limit=1",
+      SUPABASE_URL + "/rest/v1/hm_tickets?select=*&order=created_at.desc",
+      { headers: SB_HEADERS }
+    );
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return rows.map(function(r) {
+      return {
+        id:          r.id,
+        ticketNo:    r.ticket_no,
+        createdAt:   r.created_at,
+        status:      r.status,
+        message:     r.message,
+        area:        r.area,
+        submittedBy: r.submitted_by,
+        assignee:    r.assignee,
+        photo:       r.photo,
+        lang:        r.lang,
+      };
+    });
+  } catch { return null; }
+}
+
+async function saveTicket(ticket) {
+  try {
+    await fetch(SUPABASE_URL + "/rest/v1/hm_tickets", {
+      method: "POST",
+      headers: { ...SB_HEADERS, "Prefer": "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify({
+        id:           ticket.id,
+        ticket_no:    ticket.ticketNo,
+        created_at:   ticket.createdAt,
+        status:       ticket.status,
+        message:      ticket.message,
+        area:         ticket.area,
+        submitted_by: ticket.submittedBy,
+        assignee:     ticket.assignee,
+        photo:        ticket.photo || null,
+        lang:         ticket.lang || "en",
+        updated_at:   new Date().toISOString(),
+      }),
+    });
+  } catch {}
+}
+
+async function updateTicketRow(id, changes) {
+  try {
+    const body = { updated_at: new Date().toISOString() };
+    if (changes.status   !== undefined) body.status   = changes.status;
+    if (changes.area     !== undefined) body.area     = changes.area;
+    if (changes.assignee !== undefined) body.assignee = changes.assignee;
+    await fetch(SUPABASE_URL + "/rest/v1/hm_tickets?id=eq." + encodeURIComponent(id), {
+      method: "PATCH",
+      headers: { ...SB_HEADERS, "Prefer": "return=minimal" },
+      body: JSON.stringify(body),
+    });
+  } catch {}
+}
+
+async function deleteTickets(ids) {
+  try {
+    await fetch(
+      SUPABASE_URL + "/rest/v1/hm_tickets?id=in.(" + ids.map(function(i){return encodeURIComponent(i);}).join(",") + ")",
+      { method: "DELETE", headers: SB_HEADERS }
+    );
+  } catch {}
+}
+
+// ─── Settings functions (team stored as JSON blob — low write frequency) ──────
+async function loadSettings(key) {
+  try {
+    const res = await fetch(
+      SUPABASE_URL + "/rest/v1/hm_settings?key=eq." + encodeURIComponent(key) + "&select=value&limit=1",
       { headers: SB_HEADERS }
     );
     if (!res.ok) return null;
@@ -182,9 +254,9 @@ async function loadData(key) {
   } catch { return null; }
 }
 
-async function saveData(key, value) {
+async function saveSettings(key, value) {
   try {
-    await fetch(SUPABASE_URL + "/rest/v1/tickets", {
+    await fetch(SUPABASE_URL + "/rest/v1/hm_settings", {
       method: "POST",
       headers: { ...SB_HEADERS, "Prefer": "resolution=merge-duplicates,return=minimal" },
       body: JSON.stringify({ key, value: JSON.stringify(value), updated_at: new Date().toISOString() }),
@@ -1025,7 +1097,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(function(){
-    Promise.all([loadData("hm-tickets"),loadData("hm-team")])
+    Promise.all([loadTickets(), loadSettings("hm-team")])
       .then(function(results){
         if(results[0]) setTickets(results[0]);
         if(results[1]) setTeam(results[1]);
@@ -1035,26 +1107,24 @@ export default function App() {
 
   useEffect(function(){
     const id = setInterval(function(){
-      loadData("hm-tickets").then(function(t){ if(t) setTickets(t); });
+      loadTickets().then(function(t){ if(t) setTickets(t); });
     }, 15000);
     return function(){ clearInterval(id); };
   },[]);
 
   const addTicket = async function(data) {
     const ticket = { id:Date.now().toString(), createdAt:new Date().toISOString(), status:"todo", assignee:"Unassigned", ...data };
-    const updated = [ticket,...tickets];
-    setTickets(updated);
-    await saveData("hm-tickets",updated);
+    setTickets(function(prev){ return [ticket,...prev]; });
+    await saveTicket(ticket);
   };
 
   const updateTicket = async function(id,changes) {
-    const updated = tickets.map(function(t){ return t.id===id ? {...t,...changes} : t; });
-    setTickets(updated);
-    await saveData("hm-tickets",updated);
+    setTickets(function(prev){ return prev.map(function(t){ return t.id===id ? {...t,...changes} : t; }); });
+    await updateTicketRow(id, changes);
   };
 
-  const saveSettings = async function() {
-    await saveData("hm-team",team);
+  const saveSettingsFn = async function() {
+    await saveSettings("hm-team", team);
   };
 
   const clearCompleted = async function() {
@@ -1063,9 +1133,9 @@ export default function App() {
     const csv     = ticketsToCSV(completed);
     const dateStr = new Date().toLocaleDateString("en-GB").split("/").join("-");
     downloadCSV(csv, "HamptonManor-Completed-" + dateStr + ".csv");
-    const remaining = tickets.filter(function(t){return t.status!=="done";});
-    setTickets(remaining);
-    await saveData("hm-tickets",remaining);
+    const ids = completed.map(function(t){return t.id;});
+    setTickets(function(prev){ return prev.filter(function(t){return t.status!=="done";}); });
+    await deleteTickets(ids);
   };
 
   if (loading) return (
@@ -1086,7 +1156,7 @@ export default function App() {
         {view==="log"          && <EstateLog tickets={tickets} />}
         {view==="user"         && <UserPortal team={team} tickets={tickets} onUpdate={updateTicket} assignees={assignees} />}
         {view==="manager-gate" && <ManagerPinGate onSuccess={function(){setView("manager");}} />}
-        {view==="manager"      && <ManagerPortal tickets={tickets} onUpdate={updateTicket} team={team} setTeam={setTeam} onSaveSettings={saveSettings} onClearCompleted={clearCompleted} />}
+        {view==="manager"      && <ManagerPortal tickets={tickets} onUpdate={updateTicket} team={team} setTeam={setTeam} onSaveSettings={saveSettingsFn} onClearCompleted={clearCompleted} />}
       </div>
       <div style={{ borderTop:"1px solid " + B.creamBorder, padding:"24px", textAlign:"center", marginTop:40 }}>
         <LogoWordmark navSize={13} />
