@@ -159,109 +159,27 @@ function generateTicketNumber() {
   return "HM-" + yy + mm + "-" + String(Math.floor(Math.random()*9000)+1000);
 }
 
-// ─── Supabase config ──────────────────────────────────────────────────────────
-const SUPABASE_URL = "https://nolzqgcqfwexjmpdrpuh.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vbHpxZ2NxZndleGptcGRycHVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NjY3NzEsImV4cCI6MjA5NDM0Mjc3MX0.eWkPupfY3NrTtITbqeCrBVRdIptfE5ZvO3Md1YVqgMw";
-const SB_HEADERS = {
-  "apikey": SUPABASE_KEY,
-  "Authorization": "Bearer " + SUPABASE_KEY,
-  "Content-Type": "application/json",
-  "Prefer": "return=representation",
-};
-
-// ─── Ticket data functions (each ticket = its own row) ────────────────────────
+// ─── Data storage ────────────────────────────────────────────────────────────
 async function loadTickets() {
   try {
-    const res = await fetch(
-      SUPABASE_URL + "/rest/v1/hm_tickets?select=*&order=created_at.desc",
-      { headers: SB_HEADERS }
-    );
-    if (!res.ok) return null;
-    const rows = await res.json();
-    return rows.map(function(r) {
-      return {
-        id:          r.id,
-        ticketNo:    r.ticket_no,
-        createdAt:   r.created_at,
-        status:      r.status,
-        message:     r.message,
-        area:        r.area,
-        submittedBy: r.submitted_by,
-        assignee:    r.assignee,
-        photo:       r.photo,
-        lang:        r.lang,
-      };
-    });
-  } catch { return null; }
+    const r = await window.storage.get("hm-tickets", true);
+    return r ? JSON.parse(r.value) : [];
+  } catch { return []; }
 }
 
-async function saveTicket(ticket) {
-  try {
-    await fetch(SUPABASE_URL + "/rest/v1/hm_tickets", {
-      method: "POST",
-      headers: { ...SB_HEADERS, "Prefer": "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify({
-        id:           ticket.id,
-        ticket_no:    ticket.ticketNo,
-        created_at:   ticket.createdAt,
-        status:       ticket.status,
-        message:      ticket.message,
-        area:         ticket.area,
-        submitted_by: ticket.submittedBy,
-        assignee:     ticket.assignee,
-        photo:        ticket.photo || null,
-        lang:         ticket.lang || "en",
-        updated_at:   new Date().toISOString(),
-      }),
-    });
-  } catch {}
+async function saveTickets(tickets) {
+  try { await window.storage.set("hm-tickets", JSON.stringify(tickets), true); } catch {}
 }
 
-async function updateTicketRow(id, changes) {
-  try {
-    const body = { updated_at: new Date().toISOString() };
-    if (changes.status   !== undefined) body.status   = changes.status;
-    if (changes.area     !== undefined) body.area     = changes.area;
-    if (changes.assignee !== undefined) body.assignee = changes.assignee;
-    await fetch(SUPABASE_URL + "/rest/v1/hm_tickets?id=eq." + encodeURIComponent(id), {
-      method: "PATCH",
-      headers: { ...SB_HEADERS, "Prefer": "return=minimal" },
-      body: JSON.stringify(body),
-    });
-  } catch {}
-}
-
-async function deleteTickets(ids) {
-  try {
-    await fetch(
-      SUPABASE_URL + "/rest/v1/hm_tickets?id=in.(" + ids.map(function(i){return encodeURIComponent(i);}).join(",") + ")",
-      { method: "DELETE", headers: SB_HEADERS }
-    );
-  } catch {}
-}
-
-// ─── Settings functions (team stored as JSON blob — low write frequency) ──────
 async function loadSettings(key) {
   try {
-    const res = await fetch(
-      SUPABASE_URL + "/rest/v1/hm_settings?key=eq." + encodeURIComponent(key) + "&select=value&limit=1",
-      { headers: SB_HEADERS }
-    );
-    if (!res.ok) return null;
-    const rows = await res.json();
-    if (!rows || rows.length === 0) return null;
-    return JSON.parse(rows[0].value);
+    const r = await window.storage.get(key, true);
+    return r ? JSON.parse(r.value) : null;
   } catch { return null; }
 }
 
 async function saveSettings(key, value) {
-  try {
-    await fetch(SUPABASE_URL + "/rest/v1/hm_settings", {
-      method: "POST",
-      headers: { ...SB_HEADERS, "Prefer": "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify({ key, value: JSON.stringify(value), updated_at: new Date().toISOString() }),
-    });
-  } catch {}
+  try { await window.storage.set(key, JSON.stringify(value), true); } catch {}
 }
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
@@ -1114,13 +1032,15 @@ export default function App() {
 
   const addTicket = async function(data) {
     const ticket = { id:Date.now().toString(), createdAt:new Date().toISOString(), status:"todo", assignee:"Unassigned", ...data };
-    setTickets(function(prev){ return [ticket,...prev]; });
-    await saveTicket(ticket);
+    const updated = [ticket, ...tickets];
+    setTickets(updated);
+    await saveTickets(updated);
   };
 
-  const updateTicket = async function(id,changes) {
-    setTickets(function(prev){ return prev.map(function(t){ return t.id===id ? {...t,...changes} : t; }); });
-    await updateTicketRow(id, changes);
+  const updateTicket = async function(id, changes) {
+    const updated = tickets.map(function(t){ return t.id===id ? {...t,...changes} : t; });
+    setTickets(updated);
+    await saveTickets(updated);
   };
 
   const saveSettingsFn = async function() {
@@ -1130,12 +1050,12 @@ export default function App() {
   const clearCompleted = async function() {
     const completed = tickets.filter(function(t){return t.status==="done";});
     if (completed.length===0) return;
-    const csv     = ticketsToCSV(completed);
+    const csv = ticketsToCSV(completed);
     const dateStr = new Date().toLocaleDateString("en-GB").split("/").join("-");
     downloadCSV(csv, "HamptonManor-Completed-" + dateStr + ".csv");
-    const ids = completed.map(function(t){return t.id;});
-    setTickets(function(prev){ return prev.filter(function(t){return t.status!=="done";}); });
-    await deleteTickets(ids);
+    const remaining = tickets.filter(function(t){return t.status!=="done";});
+    setTickets(remaining);
+    await saveTickets(remaining);
   };
 
   if (loading) return (
