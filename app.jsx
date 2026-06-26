@@ -159,27 +159,133 @@ function generateTicketNumber() {
   return "HM-" + yy + mm + "-" + String(Math.floor(Math.random()*9000)+1000);
 }
 
-// ─── Data storage ────────────────────────────────────────────────────────────
+// ─── Supabase config ─────────────────────────────────────────────────────────
+const SUPABASE_URL = "https://rfjtoofaytonkeimjubf.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmanRvb2ZheXRvbmtlaW1qdWJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NzUyNzcsImV4cCI6MjA5ODA1MTI3N30.JPIsoYi41klYeO1gcEtU5HFHffIMG6ivo1Eomk-zvK0";
+const SB = {
+  "apikey": SUPABASE_KEY,
+  "Authorization": "Bearer " + SUPABASE_KEY,
+  "Content-Type": "application/json",
+};
+
+// ─── Data functions ───────────────────────────────────────────────────────────
 async function loadTickets() {
   try {
-    const r = await window.storage.get("hm-tickets", true);
-    return r ? JSON.parse(r.value) : [];
-  } catch { return []; }
+    const res = await fetch(SUPABASE_URL + "/rest/v1/hm_tickets?select=*&order=created_at.desc", {
+      headers: SB
+    });
+    if (!res.ok) { console.error("loadTickets failed:", res.status, await res.text()); return []; }
+    const rows = await res.json();
+    return rows.map(function(r) {
+      return {
+        id:          r.id,
+        ticketNo:    r.ticket_no,
+        createdAt:   r.created_at,
+        status:      r.status || "todo",
+        message:     r.message,
+        area:        r.area,
+        submittedBy: r.submitted_by,
+        assignee:    r.assignee || "Unassigned",
+        photo:       r.photo,
+        lang:        r.lang || "en",
+      };
+    });
+  } catch(e) { console.error("loadTickets error:", e); return []; }
 }
 
 async function saveTickets(tickets) {
-  try { await window.storage.set("hm-tickets", JSON.stringify(tickets), true); } catch {}
+  // Save each ticket individually so concurrent saves never conflict
+  try {
+    for (const ticket of tickets) {
+      await fetch(SUPABASE_URL + "/rest/v1/hm_tickets", {
+        method: "POST",
+        headers: { ...SB, "Prefer": "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({
+          id:           ticket.id,
+          ticket_no:    ticket.ticketNo,
+          created_at:   ticket.createdAt,
+          status:       ticket.status || "todo",
+          message:      ticket.message,
+          area:         ticket.area || "",
+          submitted_by: ticket.submittedBy || "Staff",
+          assignee:     ticket.assignee || "Unassigned",
+          photo:        ticket.photo || null,
+          lang:         ticket.lang || "en",
+          updated_at:   new Date().toISOString(),
+        }),
+      });
+    }
+  } catch(e) { console.error("saveTickets error:", e); }
+}
+
+async function saveOneTicket(ticket) {
+  try {
+    const res = await fetch(SUPABASE_URL + "/rest/v1/hm_tickets", {
+      method: "POST",
+      headers: { ...SB, "Prefer": "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify({
+        id:           ticket.id,
+        ticket_no:    ticket.ticketNo,
+        created_at:   ticket.createdAt,
+        status:       ticket.status || "todo",
+        message:      ticket.message,
+        area:         ticket.area || "",
+        submitted_by: ticket.submittedBy || "Staff",
+        assignee:     ticket.assignee || "Unassigned",
+        photo:        ticket.photo || null,
+        lang:         ticket.lang || "en",
+        updated_at:   new Date().toISOString(),
+      }),
+    });
+    if (!res.ok) console.error("saveOneTicket failed:", res.status, await res.text());
+  } catch(e) { console.error("saveOneTicket error:", e); }
+}
+
+async function patchTicket(id, changes) {
+  try {
+    const body = { updated_at: new Date().toISOString() };
+    if (changes.status   !== undefined) body.status   = changes.status;
+    if (changes.area     !== undefined) body.area     = changes.area;
+    if (changes.assignee !== undefined) body.assignee = changes.assignee;
+    const res = await fetch(SUPABASE_URL + "/rest/v1/hm_tickets?id=eq." + id, {
+      method: "PATCH",
+      headers: { ...SB, "Prefer": "return=minimal" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) console.error("patchTicket failed:", res.status, await res.text());
+  } catch(e) { console.error("patchTicket error:", e); }
+}
+
+async function deleteCompletedTickets(ids) {
+  try {
+    const res = await fetch(SUPABASE_URL + "/rest/v1/hm_tickets?id=in.(" + ids.join(",") + ")", {
+      method: "DELETE",
+      headers: SB,
+    });
+    if (!res.ok) console.error("delete failed:", res.status, await res.text());
+  } catch(e) { console.error("delete error:", e); }
 }
 
 async function loadSettings(key) {
   try {
-    const r = await window.storage.get(key, true);
-    return r ? JSON.parse(r.value) : null;
-  } catch { return null; }
+    const res = await fetch(SUPABASE_URL + "/rest/v1/hm_settings?key=eq." + key + "&select=value&limit=1", {
+      headers: SB
+    });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return rows.length > 0 ? JSON.parse(rows[0].value) : null;
+  } catch(e) { console.error("loadSettings error:", e); return null; }
 }
 
 async function saveSettings(key, value) {
-  try { await window.storage.set(key, JSON.stringify(value), true); } catch {}
+  try {
+    const res = await fetch(SUPABASE_URL + "/rest/v1/hm_settings", {
+      method: "POST",
+      headers: { ...SB, "Prefer": "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify({ key, value: JSON.stringify(value), updated_at: new Date().toISOString() }),
+    });
+    if (!res.ok) console.error("saveSettings failed:", res.status, await res.text());
+  } catch(e) { console.error("saveSettings error:", e); }
 }
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
@@ -1032,15 +1138,13 @@ export default function App() {
 
   const addTicket = async function(data) {
     const ticket = { id:Date.now().toString(), createdAt:new Date().toISOString(), status:"todo", assignee:"Unassigned", ...data };
-    const updated = [ticket, ...tickets];
-    setTickets(updated);
-    await saveTickets(updated);
+    setTickets(function(prev){ return [ticket, ...prev]; });
+    await saveOneTicket(ticket);
   };
 
   const updateTicket = async function(id, changes) {
-    const updated = tickets.map(function(t){ return t.id===id ? {...t,...changes} : t; });
-    setTickets(updated);
-    await saveTickets(updated);
+    setTickets(function(prev){ return prev.map(function(t){ return t.id===id ? {...t,...changes} : t; }); });
+    await patchTicket(id, changes);
   };
 
   const saveSettingsFn = async function() {
@@ -1053,9 +1157,9 @@ export default function App() {
     const csv = ticketsToCSV(completed);
     const dateStr = new Date().toLocaleDateString("en-GB").split("/").join("-");
     downloadCSV(csv, "HamptonManor-Completed-" + dateStr + ".csv");
-    const remaining = tickets.filter(function(t){return t.status!=="done";});
-    setTickets(remaining);
-    await saveTickets(remaining);
+    const ids = completed.map(function(t){ return t.id; });
+    setTickets(function(prev){ return prev.filter(function(t){ return t.status!=="done"; }); });
+    await deleteCompletedTickets(ids);
   };
 
   if (loading) return (
