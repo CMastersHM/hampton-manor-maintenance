@@ -1030,18 +1030,26 @@ function EstateLog({ tickets }) {
       ) : (
         filtered.map(function(t) {
           return (
-            <div key={t.id} style={{ background:B.white, border:"1px solid " + B.creamBorder, marginBottom:8, padding:"16px 18px" }}>
-              <div style={{ display:"flex", alignItems:"flex-start", gap:12 }}>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5, flexWrap:"wrap" }}>
-                    <Badge status={t.status==="pending"?"todo":t.status} />
-                    {t.ticketNo && <span style={{ fontFamily:"monospace", fontSize:10, color:B.charcoalLight, background:B.creamDark, padding:"2px 7px" }}>{t.ticketNo}</span>}
-                    {t.area && <span style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, letterSpacing:"0.06em", textTransform:"uppercase" }}>{t.area}</span>}
-                  </div>
-                  <div style={{ fontSize:15, fontFamily:fontSerif, color:B.charcoal, lineHeight:1.5, wordBreak:"break-word" }}>{t.message}</div>
-                  <div style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, marginTop:5, letterSpacing:"0.04em" }}>🕐 {formatDate(t.createdAt)}</div>
+            <div key={t.id} style={{ background:B.white, border:"1px solid " + B.creamBorder, marginBottom:8, overflow:"hidden" }}>
+              <div style={{ padding:"16px 18px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6, flexWrap:"wrap" }}>
+                  <Badge status={t.status==="pending"?"todo":t.status} />
+                  {t.ticketNo && <span style={{ fontFamily:"monospace", fontSize:10, color:B.charcoalLight, background:B.creamDark, padding:"2px 7px" }}>{t.ticketNo}</span>}
+                  {t.area && <span style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, letterSpacing:"0.06em", textTransform:"uppercase" }}>{t.area}</span>}
+                  {t.assignee && t.assignee !== "Unassigned" && (
+                    <span style={{ fontSize:11, color:B.charcoal, background:B.creamDark, padding:"2px 8px", fontFamily:fontSans, letterSpacing:"0.04em" }}>
+                      &rarr; {t.assignee}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize:15, fontFamily:fontSerif, color:B.charcoal, lineHeight:1.5, wordBreak:"break-word", marginBottom:6 }}>{t.message}</div>
+                <div style={{ fontSize:11, color:B.charcoalLight, fontFamily:fontSans, letterSpacing:"0.04em" }}>
+                  🕐 {formatDate(t.createdAt)} · {t.submittedBy || "Staff"}
                 </div>
               </div>
+              {t.photo && (
+                <img src={t.photo} alt="Issue" style={{ width:"100%", maxHeight:260, objectFit:"cover", display:"block", borderTop:"1px solid " + B.creamBorder }} />
+              )}
             </div>
           );
         })
